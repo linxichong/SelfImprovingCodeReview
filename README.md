@@ -41,6 +41,37 @@ Initial scope:
 
 Later phases will add feedback capture, memory candidates, human approval, retrieval, and GitHub/GitLab integration.
 
+
+## Usage
+
+Run a deterministic local smoke test without an API key:
+
+```bash
+python3 review.py \
+  --diff-file eval/cases/todo.diff \
+  --rules rules/coding_rules.md \
+  --mock
+```
+
+Run against the current Git diff with the OpenAI API:
+
+```bash
+export OPENAI_API_KEY="your_api_key_here"
+python3 review.py --git-diff --output review.json
+```
+
+Optional environment variables:
+
+```text
+OPENAI_API_KEY  Required unless --mock is used
+OPENAI_MODEL    Defaults to gpt-5
+```
+
+Run tests:
+
+```bash
+python3 -m unittest discover -s tests -v
+```
 ## Core Idea
 
 モデルを学習させるのではなく、Feedback から Context を成長させる。

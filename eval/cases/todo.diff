@@ -1,0 +1,8 @@
+diff --git a/app/service.py b/app/service.py
+index 0000000..1111111 100644
+--- a/app/service.py
++++ b/app/service.py
+@@ -1,3 +1,4 @@
+ def handle_user(user):
++    # TODO: validate permissions before returning data
+     return user.data

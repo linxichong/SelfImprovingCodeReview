@@ -1,0 +1,5 @@
+[project]
+name = "self-improving-code-review"
+version = "0.1.0"
+description = "A feedback-loop based AI code review agent."
+requires-python = ">=3.11"
