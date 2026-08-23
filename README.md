@@ -1,50 +1,78 @@
 # Self-Improving AI Code Reviewer
 
-Feedback Loop を活用した自己改善型 AI Code Review Agent.
+基于 Feedback Loop 的自我改善型 AI Code Review Agent。
 
-This project explores an AI code review agent that improves over time by turning developer feedback into reusable engineering memory.
+本项目的目标不是单纯做一个“会调用 LLM 的 Code Review Bot”，而是探索一种可以持续吸收开发者反馈、逐步形成项目工程知识记忆的 AI Code Review 系统。
 
-The first goal is not to fine-tune a model. Instead, the system keeps the model stable and improves the review context through:
+核心思想：
 
 ```text
 AI Review
+  ↓
 Human Feedback
+  ↓
 Knowledge Extraction
+  ↓
 Feedback Memory
+  ↓
 Context Retrieval
+  ↓
 Next Review
 ```
 
-## Current Status
+也就是说：
 
-This repository is currently in the design phase.
+> 不是持续训练模型，而是通过 Feedback 持续改善 Context。
 
-The main design document is:
+日文表达：
+
+> モデルを学習させるのではなく、Feedback から Context を成長させる。
+
+## 当前状态
+
+当前项目处于 Phase 1 开发阶段：Baseline Reviewer CLI。
+
+已完成：
+
+- 设计文档
+- Python 项目基础结构
+- `review.py` CLI 入口
+- Git diff / diff 文件读取
+- Project rules 读取
+- OpenAI Responses API 客户端
+- 结构化 Review JSON 输出
+- 本地 mock reviewer
+- 基础单元测试
+
+主要设计文档：
 
 - `self-improving-ai-code-review-design.md`
 
-## MVP Direction
+## Phase 1 目标
 
-The first implementation target is a minimal CLI reviewer:
+第一阶段先实现最小可运行闭环：
 
-```bash
-python review.py --git-diff --output review.json
+```text
+Git Diff
+  ↓
+LLM
+  ↓
+Structured Review JSON
 ```
 
-Initial scope:
+暂时不做：
 
-- Read Git diff
-- Build review context
-- Call an LLM
-- Return structured review JSON
-- Prepare evaluation cases
+- Web UI
+- Feedback Memory
+- Vector Database
+- Multi-Agent 编排框架
+- GitHub / GitLab Webhook 集成
 
-Later phases will add feedback capture, memory candidates, human approval, retrieval, and GitHub/GitLab integration.
+这些会放到后续 Phase 中逐步加入。
 
+## 快速开始
 
-## Usage
-
-Run a deterministic local smoke test without an API key:
+使用本地 mock reviewer 运行，无需 API Key：
 
 ```bash
 python3 review.py \
@@ -53,25 +81,143 @@ python3 review.py \
   --mock
 ```
 
-Run against the current Git diff with the OpenAI API:
+输出示例：
+
+```json
+{
+  "reviews": [
+    {
+      "id": "R001",
+      "file": "app/service.py",
+      "start_line": 2,
+      "end_line": 2,
+      "category": "maintainability",
+      "severity": "low",
+      "title": "Unresolved TODO in changed code",
+      "confidence": 0.7,
+      "used_memory_ids": []
+    }
+  ],
+  "metadata": {
+    "mode": "mock",
+    "reviewer_version": "0.1.0"
+  }
+}
+```
+
+## 使用 OpenAI API
+
+设置环境变量：
 
 ```bash
 export OPENAI_API_KEY="your_api_key_here"
+export OPENAI_MODEL="gpt-5"
+```
+
+Review 当前 Git diff：
+
+```bash
 python3 review.py --git-diff --output review.json
 ```
 
-Optional environment variables:
+Review 指定 diff 文件：
 
-```text
-OPENAI_API_KEY  Required unless --mock is used
-OPENAI_MODEL    Defaults to gpt-5
+```bash
+python3 review.py \
+  --diff-file eval/cases/todo.diff \
+  --rules rules/coding_rules.md \
+  --output review.json
 ```
 
-Run tests:
+## CLI 参数
+
+```text
+--git-diff        读取当前仓库的 staged diff；如果 staged diff 为空，则读取 unstaged diff
+--diff-file       读取指定 diff 文件
+--rules           指定项目规则文件，默认 rules/coding_rules.md
+--output          输出 JSON 文件路径；不指定时输出到 stdout
+--mock            使用本地 mock reviewer，不调用 OpenAI API
+--model           指定 OpenAI 模型，默认读取 OPENAI_MODEL 或使用 gpt-5
+```
+
+## 返回码
+
+```text
+0 = success
+1 = invalid input
+2 = LLM call failed
+3 = invalid LLM output
+4 = internal error
+```
+
+## 测试
+
+当前测试使用 Python 标准库 `unittest`，不依赖第三方包。
+
+运行测试：
 
 ```bash
 python3 -m unittest discover -s tests -v
 ```
-## Core Idea
 
-モデルを学習させるのではなく、Feedback から Context を成長させる。
+运行语法检查：
+
+```bash
+python3 -m compileall app review.py tests
+```
+
+## 工程化方向
+
+后续需要补充标准工程能力：
+
+- 单元测试覆盖率
+- lint
+- format
+- type check
+- CI
+- PR check
+- Evaluation cases 自动化
+
+建议后续工具：
+
+```text
+ruff      lint + format
+mypy      type check
+coverage  test coverage
+pytest    test runner
+GitHub Actions CI
+```
+
+## 分支策略
+
+建议使用：
+
+```text
+main       稳定版本
+ develop   开发集成分支
+ feature/* 具体功能分支
+```
+
+当前 Phase 1 推荐分支：
+
+```text
+feature/phase1-baseline-reviewer
+```
+
+开发完成后，通过 PR 合并到：
+
+```text
+develop
+```
+
+## 后续路线
+
+```text
+Phase 1  Baseline Reviewer CLI
+Phase 2  Multi Reviewer + Review Manager
+Phase 3  Feedback Capture
+Phase 4  Memory Candidate + Human Approval
+Phase 5  Memory Retrieval
+Phase 6  Evaluation
+Phase 7  GitHub / GitLab Integration
+```
