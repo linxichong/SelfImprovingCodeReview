@@ -1,0 +1,15 @@
+{
+  "case_id": "todo.diff",
+  "description": "TODO comment in changed code",
+  "expected_findings": [
+    {
+      "category": "maintainability",
+      "severity": "low",
+      "title": "Unresolved TODO in changed code",
+      "should_find": true,
+      "notes": "The TODO in the added line should be detected"
+    }
+  ],
+  "expected_no_issue": [],
+  "ground_truth_created_at": "2026-08-23"
+}

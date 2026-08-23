@@ -1,0 +1,7 @@
+{
+  "description": "Dev/Test split for evaluation. §20.1",
+  "dev": ["todo.diff"],
+  "test": [],
+  "created_at": "2026-08-23",
+  "notes": "Initial split. Need to add more cases to reach 12 dev / 8 test."
+}

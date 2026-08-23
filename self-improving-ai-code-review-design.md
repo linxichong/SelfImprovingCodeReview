@@ -1983,8 +1983,21 @@ Structured Review JSON
 
 - 可以读取 Git Diff
 - 调用 LLM
-- 返回统一 JSON
+- 返回统一 JSON（§9，含 `fingerprint` 与 `line_valid`）
 - 支持基础 Bug Review
+- 收集成本指标（§22.3）：`input_tokens` / `output_tokens` / `latency_ms`
+- **同时准备 Evaluation Skeleton**（不等待后续 Phase）：
+
+```text
+eval/split.json      # Dev/Test 划分
+eval/cases/          # 至少 3-5 个 diff case
+eval/expected/       # 每个 case 的 ground truth findings
+eval/baseline/       # Arm A 的输出，用于后续对比
+eval/metrics.py      # 计算 Precision/Recall/Duplicate Rate
+```
+
+这样后续加入 Multi-Agent、Memory、Retrieval 时，能持续确认系统是否真的变好。
+若 Phase 1 不固定评测骨架，后面改结构代价极大。
 
 ---
 
@@ -2362,46 +2375,4 @@ Development Knowledge Agent
 
 # 31. 下一步
 
-下一阶段：
-
-## Phase 1 — Baseline Code Reviewer
-
-实现最小闭环：
-
-```text
-Git Diff
-   ↓
-LLM
-   ↓
-Structured Review JSON
-```
-
-第一版先不做 UI、不做 Memory、不做复杂 Agent Framework。
-
-目标是先完成：
-
-```text
-python review.py
-```
-
-输入当前 Git Diff，输出：
-
-```json
-{
-  "reviews": [...]
-}
-```
-
-然后再逐步增加：
-
-```text
-Multi-Agent
-↓
-Feedback
-↓
-Memory
-↓
-Retrieval
-↓
-Evaluation
-```
+Phase 1 的具体要求见 §25 开发阶段与 §26 第一阶段 CLI Contract。

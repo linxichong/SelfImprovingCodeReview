@@ -20,6 +20,8 @@ class ReviewFinding:
     evidence: str
     suggestion: str
     confidence: float
+    fingerprint: str = ""  # §9.1: computed by code, not LLM
+    line_valid: int = 1    # §18.1: 1=valid, 0=out of range
     used_memory_ids: list[str] = field(default_factory=list)
 
     @classmethod
@@ -53,6 +55,8 @@ class ReviewFinding:
             evidence=str(value["evidence"]),
             suggestion=str(value["suggestion"]),
             confidence=float(value["confidence"]),
+            fingerprint=str(value.get("fingerprint", "")),
+            line_valid=int(value.get("line_valid", 1)),
             used_memory_ids=[str(item) for item in value.get("used_memory_ids", [])],
         )
         finding.validate()
@@ -81,6 +85,8 @@ class ReviewFinding:
             "evidence": self.evidence,
             "suggestion": self.suggestion,
             "confidence": self.confidence,
+            "fingerprint": self.fingerprint,
+            "line_valid": self.line_valid,
             "used_memory_ids": self.used_memory_ids,
         }
 

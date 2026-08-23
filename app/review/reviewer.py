@@ -60,6 +60,8 @@ class HeuristicMockReviewerClient:
                     "evidence": "TODO or FIXME appears in the provided diff.",
                     "suggestion": "Resolve the TODO before merging or link it to a tracked follow-up.",
                     "confidence": 0.7,
+                    "fingerprint": "",  # Will be computed in cli.py
+                    "line_valid": 1,    # Mock always returns valid lines
                     "used_memory_ids": [],
                 }
             )

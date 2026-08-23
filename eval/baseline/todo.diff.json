@@ -1,0 +1,31 @@
+{
+  "reviews": [
+    {
+      "id": "R001",
+      "file": "app/service.py",
+      "start_line": 5,
+      "end_line": 5,
+      "category": "maintainability",
+      "severity": "low",
+      "title": "Unresolved TODO in changed code",
+      "description": "The diff contains TODO/FIXME text that may represent unfinished work.",
+      "evidence": "TODO or FIXME appears in the provided diff.",
+      "suggestion": "Resolve the TODO before merging or link it to a tracked follow-up.",
+      "confidence": 0.7,
+      "fingerprint": "maintainability:app/service.py:unknown:unresolved-todo-changed-code",
+      "line_valid": 0,
+      "used_memory_ids": []
+    }
+  ],
+  "metadata": {
+    "mode": "mock",
+    "reviewer_version": "0.1.0",
+    "review_time_ms": 4,
+    "model": "gpt-4o-2024-11-20",
+    "temperature": 0,
+    "prompt_version": "p1",
+    "memory_snapshot_id": null,
+    "input_tokens": null,
+    "output_tokens": null
+  }
+}
