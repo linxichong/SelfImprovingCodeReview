@@ -1,0 +1,10 @@
+id: SECURITY.WEAK_CRYPTOGRAPHY
+category: security
+severity: high
+scope:
+  languages: [python]
+  keywords: [hashlib.md5, hashlib.sha1, random., Random(]
+instruction: >
+  パスワード、認証 Token、署名、秘密値などのセキュリティ用途に MD5、SHA-1、または
+  random を使用する場合だけ指摘する。非セキュリティ用途のチェックサムや再現可能な
+  テストデータ生成は、用途を根拠なく危険と判断しない。

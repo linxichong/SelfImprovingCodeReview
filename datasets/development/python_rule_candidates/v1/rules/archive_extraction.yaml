@@ -1,0 +1,12 @@
+id: SECURITY.UNSAFE_ARCHIVE_EXTRACTION
+category: security
+severity: high
+scope:
+  languages:
+  - python
+  keywords:
+  - extractall(
+  - extract(
+instruction: 未信頼アーカイブの展開が出力先外の書込みを許すか確認する。入力の未信頼性と、安全なフィルターを外した展開経路が提示されている場合だけ報告する。tarfile
+  の filter="data" 等の明示的な防御を確認し、Python 版による既定フィルターの違いを無視しない。パス文字列の前方一致だけを防御成立の根拠にしない。Python
+  版、入力元、独自展開処理が不明なら needs_context=true とする。

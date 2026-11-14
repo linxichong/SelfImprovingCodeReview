@@ -1,0 +1,403 @@
+{
+  "schema_version": 1,
+  "cases": [
+    {
+      "path": "src/jobs/decoders.py",
+      "source": "import pickle\n\n\ndef decode_export(http_body: bytes) -> object:\n    \"\"\"未認証 HTTP 入力をサーバープロセス内で復元する。\"\"\"\n    return pickle.loads(http_body)\n\n\ndef decode_restore(uploaded_bytes: bytes) -> object:\n    \"\"\"外部利用者のバックアップをサーバープロセス内で復元する。\"\"\"\n    return pickle.loads(uploaded_bytes)\n",
+      "issues": [
+        {
+          "symbol": "decode_export",
+          "marker": "pickle.loads(http_body)",
+          "issue_type": "unsafe-deserialization",
+          "severity": "critical",
+          "evidence": "未信頼 pickle の復元で任意の callable が実行される。"
+        },
+        {
+          "symbol": "decode_restore",
+          "marker": "pickle.loads(uploaded_bytes)",
+          "issue_type": "unsafe-deserialization",
+          "severity": "critical",
+          "evidence": "別のアップロード入口も同様に任意の callable を実行する。"
+        }
+      ]
+    },
+    {
+      "path": "src/reports/selection.py",
+      "source": "import sqlite3\n\n\ndef list_invoices(connection: sqlite3.Connection, http_owner: str) -> list[tuple]:\n    \"\"\"HTTP の所有者値で一覧を絞る。別所有者の記録を返してはならない。\"\"\"\n    return connection.execute(f\"SELECT owner FROM invoices WHERE owner = '{http_owner}'\").fetchall()\n\n\ndef mark_paid(connection: sqlite3.Connection, http_owner: str) -> int:\n    \"\"\"HTTP の所有者値に一致する請求だけを更新する。\"\"\"\n    return connection.execute(f\"UPDATE invoices SET paid = 1 WHERE owner = '{http_owner}'\").rowcount\n",
+      "issues": [
+        {
+          "symbol": "list_invoices",
+          "marker": "return connection.execute",
+          "issue_type": "sql-injection",
+          "severity": "critical",
+          "evidence": "HTTP 値の SQL 文字列補間で所有者制限を迂回できる。"
+        },
+        {
+          "symbol": "mark_paid",
+          "marker": "return connection.execute",
+          "issue_type": "sql-injection",
+          "severity": "critical",
+          "evidence": "独立した更新クエリーでも SQL 補間により全所有者を更新できる。"
+        }
+      ]
+    },
+    {
+      "path": "src/exports/processes.py",
+      "source": "import subprocess\n\n\ndef format_label(http_label: str) -> str:\n    \"\"\"未認証 HTTP 入力を整形する。コマンドとして実行してはならない。\"\"\"\n    return subprocess.run(f\"printf '%s' {http_label}\", shell=True, capture_output=True, text=True, check=True).stdout\n\n\ndef format_filter(http_filter: str) -> str:\n    \"\"\"別の外部入力を整形する。コマンドとして実行してはならない。\"\"\"\n    return subprocess.run(f\"printf '%s' {http_filter}\", shell=True, capture_output=True, text=True, check=True).stdout\n",
+      "issues": [
+        {
+          "symbol": "format_label",
+          "marker": "return subprocess.run",
+          "issue_type": "shell-injection",
+          "severity": "critical",
+          "evidence": "未信頼入力が shell の構文として解釈され、任意のコマンドを追加できる。"
+        },
+        {
+          "symbol": "format_filter",
+          "marker": "return subprocess.run",
+          "issue_type": "shell-injection",
+          "severity": "critical",
+          "evidence": "独立した入力入口も shell の構文を追加できる。"
+        }
+      ]
+    },
+    {
+      "path": "src/uploads/archives.py",
+      "source": "import tarfile\nimport zipfile\nfrom pathlib import Path\n\n\ndef expand_zip(archive: zipfile.ZipFile, destination: Path) -> None:\n    \"\"\"利用者のアーカイブを destination の内部にだけ展開する。\"\"\"\n    for member in archive.infolist():\n        if member.is_dir():\n            continue\n        (destination / member.filename).write_bytes(archive.read(member))\n\n\ndef expand_tar(archive: tarfile.TarFile, destination: Path) -> None:\n    \"\"\"利用者のアーカイブを destination の内部にだけ展開する。\"\"\"\n    archive.extractall(destination, filter=\"fully_trusted\")\n",
+      "issues": [
+        {
+          "symbol": "expand_zip",
+          "marker": "write_bytes",
+          "issue_type": "archive-path-traversal",
+          "severity": "critical",
+          "evidence": "メンバー名の親移動で展開先の外にファイルを書き込める。"
+        },
+        {
+          "symbol": "expand_tar",
+          "marker": "archive.extractall",
+          "issue_type": "archive-path-traversal",
+          "severity": "critical",
+          "evidence": "fully_trusted は未信頼メンバーの親移動を許し、展開先の外へ書き込める。"
+        }
+      ]
+    },
+    {
+      "path": "src/attachments/access.py",
+      "source": "from pathlib import Path\n\n\ndef download(root: Path, http_filename: str) -> bytes:\n    \"\"\"HTTP 指定名の添付を読む。root の外部へアクセスしてはならない。\"\"\"\n    return (root / http_filename).read_bytes()\n\n\ndef replace(root: Path, http_filename: str, body: bytes) -> None:\n    \"\"\"HTTP 指定名の添付を更新する。root の外部へアクセスしてはならない。\"\"\"\n    (root / http_filename).write_bytes(body)\n",
+      "issues": [
+        {
+          "symbol": "download",
+          "marker": "read_bytes",
+          "issue_type": "path-traversal",
+          "severity": "high",
+          "evidence": "親移動を含む HTTP 指定名で root 外部を読み取れる。"
+        },
+        {
+          "symbol": "replace",
+          "marker": "write_bytes",
+          "issue_type": "path-traversal",
+          "severity": "high",
+          "evidence": "別の更新入口から root 外部を書き換えられる。"
+        }
+      ]
+    },
+    {
+      "path": "src/records/permissions.py",
+      "source": "def read_record(records: dict[str, tuple[str, bytes]], actor: str, requested_id: str) -> bytes:\n    \"\"\"ログイン利用者は自分が所有する記録だけを読める。tuple の先頭は所有者。\"\"\"\n    return records[requested_id][1]\n\n\ndef delete_record(records: dict[str, tuple[str, bytes]], actor: str, requested_id: str) -> None:\n    \"\"\"ログイン利用者は自分が所有する記録だけを削除できる。\"\"\"\n    del records[requested_id]\n",
+      "issues": [
+        {
+          "symbol": "read_record",
+          "marker": "return records",
+          "issue_type": "missing-object-authorization",
+          "severity": "high",
+          "evidence": "所有者と actor を照合せず別利用者の記録を読める。"
+        },
+        {
+          "symbol": "delete_record",
+          "marker": "del records",
+          "issue_type": "missing-object-authorization",
+          "severity": "high",
+          "evidence": "独立した削除入口も所有者を照合せず別利用者の記録を消せる。"
+        }
+      ]
+    },
+    {
+      "path": "src/settlements/units.py",
+      "source": "from decimal import Decimal\n\n\ndef minor_units(amount: Decimal) -> int:\n    \"\"\"小数第2位までの非負の通貨額をセントの整数へ変換する。\"\"\"\n    return int(amount)\n\n\ndef discounted(amount: Decimal, percent: int) -> Decimal:\n    \"\"\"0..100 の整数パーセントを引いた後の金額を返す。\"\"\"\n    return amount * (100 - percent)\n",
+      "issues": [
+        {
+          "symbol": "minor_units",
+          "marker": "return int",
+          "issue_type": "currency-unit-conversion",
+          "severity": "high",
+          "evidence": "セント換算の100倍を行わず金額を切り捨てる。"
+        },
+        {
+          "symbol": "discounted",
+          "marker": "return amount",
+          "issue_type": "percentage-scale-error",
+          "severity": "high",
+          "evidence": "割合を100で割らないため割引後金額が100倍になる。"
+        }
+      ]
+    },
+    {
+      "path": "src/search/windows.py",
+      "source": "def batches(values: list[int], size: int) -> list[list[int]]:\n    \"\"\"正の size ごとに全要素を一度だけ含め、最後の不完全バッチも返す。\"\"\"\n    return [values[index:index + size] for index in range(0, len(values) - size, size)]\n\n\ndef first_page(values: list[int], limit: int) -> list[int]:\n    \"\"\"非負 limit に対して先頭から最大 limit 件を返す。\"\"\"\n    return values[1:limit + 1]\n",
+      "issues": [
+        {
+          "symbol": "batches",
+          "marker": "return [values",
+          "issue_type": "last-batch-omitted",
+          "severity": "medium",
+          "evidence": "末尾の完全または不完全バッチを落とす。"
+        },
+        {
+          "symbol": "first_page",
+          "marker": "return values",
+          "issue_type": "pagination-off-by-one",
+          "severity": "medium",
+          "evidence": "先頭要素を飛ばして2件目から返す。"
+        }
+      ]
+    },
+    {
+      "path": "src/exchange/csv_rows.py",
+      "source": "def read_row(line: str) -> list[str]:\n    \"\"\"二重引用符と埋込みカンマを含む標準 CSV の単一行を読む。\"\"\"\n    return line.split(\",\")\n\n\ndef write_row(fields: list[str]) -> str:\n    \"\"\"引用符やカンマを含むフィールドを標準 CSV の一行へ変換する。\"\"\"\n    return \",\".join(fields)\n",
+      "issues": [
+        {
+          "symbol": "read_row",
+          "marker": "return line",
+          "issue_type": "csv-quoted-field-corruption",
+          "severity": "medium",
+          "evidence": "引用されたカンマも区切りにしてフィールド数と値を壊す。"
+        },
+        {
+          "symbol": "write_row",
+          "marker": "return \",\"",
+          "issue_type": "csv-output-escaping-missing",
+          "severity": "medium",
+          "evidence": "カンマや引用符のあるフィールドを引用せず、読み戻し時の値が変わる。"
+        }
+      ]
+    },
+    {
+      "path": "src/workflows/collections.py",
+      "source": "from collections.abc import Iterable\n\n\ndef request_ids(value: str, collected: list[str] = []) -> list[str]:\n    \"\"\"要求ごとに独立した一覧へ追加する。以前の要求の値を混ぜてはならない。\"\"\"\n    collected.append(value)\n    return collected\n\n\ndef summarize(values: Iterable[int]) -> tuple[int, list[int]]:\n    \"\"\"一度しか走査できない入力でも、合計と全要素の一覧を返す。\"\"\"\n    return sum(values), list(values)\n",
+      "issues": [
+        {
+          "symbol": "request_ids",
+          "marker": "def request_ids",
+          "issue_type": "mutable-default-cross-request",
+          "severity": "medium",
+          "evidence": "既定の可変一覧が複数要求で共有され、以前の値が混入する。"
+        },
+        {
+          "symbol": "summarize",
+          "marker": "return sum",
+          "issue_type": "iterator-consumed-twice",
+          "severity": "medium",
+          "evidence": "一度しか走査できない反復子を合計で消費し、一覧が空になる。"
+        }
+      ]
+    },
+    {
+      "path": "src/cache/expiry.py",
+      "source": "def is_fresh(saved_at: float, ttl_seconds: int, now: float) -> bool:\n    \"\"\"全時刻は秒単位。保存後 ttl_seconds を超えたら無効とする。\"\"\"\n    return now - saved_at <= ttl_seconds * 1000\n",
+      "issues": [
+        {
+          "symbol": "is_fresh",
+          "marker": "return now",
+          "issue_type": "ttl-unit-mismatch",
+          "severity": "high",
+          "evidence": "秒同士の比較に1000倍を入れ、期限切れデータを有効とする。"
+        }
+      ]
+    },
+    {
+      "path": "src/sync/replacement.py",
+      "source": "import sqlite3\n\n\ndef replace_rows(connection: sqlite3.Connection, rows: list[tuple[str]]) -> None:\n    \"\"\"全置換は原子的。挿入に失敗したら元の全行を保持する。\"\"\"\n    connection.execute(\"DELETE FROM entries\")\n    connection.commit()\n    connection.executemany(\"INSERT INTO entries(value) VALUES (?)\", rows)\n    connection.commit()\n",
+      "issues": [
+        {
+          "symbol": "replace_rows",
+          "marker": "connection.commit()",
+          "issue_type": "transaction-committed-too-early",
+          "severity": "high",
+          "evidence": "削除を先に確定するため挿入失敗後も元の行が失われる。"
+        }
+      ]
+    },
+    {
+      "path": "src/preferences/persistence.py",
+      "source": "import json\nfrom pathlib import Path\n\n\ndef save(path: Path, value: object) -> None:\n    \"\"\"シリアライズ失敗時は既存設定ファイルを変更してはならない。\"\"\"\n    with path.open(\"w\", encoding=\"utf-8\") as stream:\n        json.dump(value, stream)\n",
+      "issues": [
+        {
+          "symbol": "save",
+          "marker": "path.open",
+          "issue_type": "truncate-before-validation",
+          "severity": "high",
+          "evidence": "JSON 変換に失敗する前に既存ファイルを切り詰めてしまう。"
+        }
+      ]
+    },
+    {
+      "path": "src/connections/tls.py",
+      "source": "import ssl\n\n\ndef client_context() -> ssl.SSLContext:\n    \"\"\"公開ネットワークのサーバー証明書とホスト名を検証する通信に使用する。\"\"\"\n    return ssl._create_unverified_context()\n",
+      "issues": [
+        {
+          "symbol": "client_context",
+          "marker": "return ssl.",
+          "issue_type": "tls-verification-disabled",
+          "severity": "high",
+          "evidence": "返される設定は証明書検証とホスト名検証を無効にする。"
+        }
+      ]
+    },
+    {
+      "path": "src/ingestion/limits.py",
+      "source": "from collections.abc import Mapping\nfrom typing import BinaryIO\n\n\ndef read_upload(stream: BinaryIO, headers: Mapping[str, str], limit_bytes: int) -> bytes:\n    \"\"\"未認証 HTTP 本文を読む。ヘッダーにかかわらず本文上限を必ず守る。\"\"\"\n    if int(headers.get(\"Content-Length\", \"0\")) > limit_bytes:\n        raise ValueError(\"oversized\")\n    return stream.read()\n",
+      "issues": [
+        {
+          "symbol": "read_upload",
+          "marker": "return stream.read",
+          "issue_type": "unbounded-upload-read",
+          "severity": "high",
+          "evidence": "信用できない長さヘッダーだけを検証し、実際の本文を無制限に読む。"
+        }
+      ]
+    },
+    {
+      "path": "src/encoding/strict_input.py",
+      "source": "import base64\n\n\ndef decode_field(value: bytes) -> bytes:\n    \"\"\"Base64 アルファベット以外を含む入力は拒否し、黙って捨ててはならない。\"\"\"\n    return base64.b64decode(value, validate=False)\n",
+      "issues": [
+        {
+          "symbol": "decode_field",
+          "marker": "return base64",
+          "issue_type": "invalid-base64-accepted",
+          "severity": "medium",
+          "evidence": "無効な文字を黙って取り除き、不正入力を空データとして受け入れる。"
+        }
+      ]
+    },
+    {
+      "path": "src/notifications/dispatch.py",
+      "source": "from collections.abc import Callable\nfrom concurrent.futures import ThreadPoolExecutor\n\n\ndef dispatch(send: Callable[[], None]) -> bool:\n    \"\"\"送信に成功した場合だけ True を返し、失敗は呼出元へ伝える。\"\"\"\n    with ThreadPoolExecutor(max_workers=1) as executor:\n        executor.submit(send)\n    return True\n",
+      "issues": [
+        {
+          "symbol": "dispatch",
+          "marker": "executor.submit",
+          "issue_type": "future-exception-ignored",
+          "severity": "high",
+          "evidence": "Future の結果を取得しないため送信失敗でも成功と返す。"
+        }
+      ]
+    },
+    {
+      "path": "src/scheduling/cancellation.py",
+      "source": "from collections.abc import Awaitable\n\n\nasync def execute(operation: Awaitable[object]) -> object:\n    \"\"\"通常失敗は None に変換するが、タスクキャンセルは呼出元へ伝播する。\"\"\"\n    try:\n        return await operation\n    except BaseException:\n        return None\n",
+      "issues": [
+        {
+          "symbol": "execute",
+          "marker": "except BaseException",
+          "issue_type": "task-cancellation-swallowed",
+          "severity": "high",
+          "evidence": "BaseException の捕捉で CancelledError まで握りつぶす。"
+        }
+      ]
+    },
+    {
+      "path": "src/flags/decoding.py",
+      "source": "def enabled(value: str) -> bool:\n    \"\"\"入力は文字列 true または false。false は必ず False に変換する。\"\"\"\n    return bool(value)\n",
+      "issues": [
+        {
+          "symbol": "enabled",
+          "marker": "return bool",
+          "issue_type": "string-boolean-conversion",
+          "severity": "medium",
+          "evidence": "空でない文字列 false を True に変換する。"
+        }
+      ]
+    },
+    {
+      "path": "src/leases/cleanup.py",
+      "source": "def expire(deadlines: dict[str, int], now: int) -> None:\n    \"\"\"期限切れキーをすべて取り除き、有効キーを残す。\"\"\"\n    for key, deadline in deadlines.items():\n        if deadline < now:\n            del deadlines[key]\n",
+      "issues": [
+        {
+          "symbol": "expire",
+          "marker": "del deadlines",
+          "issue_type": "dictionary-mutated-during-iteration",
+          "severity": "medium",
+          "evidence": "走査中の辞書のサイズを変更するため RuntimeError となる。"
+        }
+      ]
+    },
+    {
+      "path": "src/formats/json_input.py",
+      "source": "import json\n\n\ndef decode(body: bytes) -> object:\n    \"\"\"外部の UTF-8 JSON 文書を標準の JSON 値として読む。\"\"\"\n    return json.loads(body)\n",
+      "issues": []
+    },
+    {
+      "path": "src/statements/owner_query.py",
+      "source": "import sqlite3\n\n\ndef owners(connection: sqlite3.Connection, name: str) -> list[tuple]:\n    \"\"\"値は SQL パラメーターとして扱う。\"\"\"\n    return connection.execute(\"SELECT owner FROM invoices WHERE owner = ?\", (name,)).fetchall()\n",
+      "issues": []
+    },
+    {
+      "path": "src/printing/literal.py",
+      "source": "import subprocess\n\n\ndef label(value: str) -> str:\n    \"\"\"外部入力をシェル構文ではなく単一の引数として表示する。\"\"\"\n    return subprocess.run([\"printf\", \"%s\", value], shell=False, capture_output=True, text=True, check=True).stdout\n",
+      "issues": []
+    },
+    {
+      "path": "src/archive_store/member.py",
+      "source": "import zipfile\nfrom pathlib import Path\n\n\ndef unpack(archive: zipfile.ZipFile, destination: Path) -> None:\n    \"\"\"POSIX 専用。展開先は信頼済み専用ディレクトリ。単一名だけを許し、既存ファイルは拒否する。\"\"\"\n    for member in archive.infolist():\n        name = member.filename\n        if name in (\"\", \".\", \"..\") or \"/\" in name or \"\\\\\" in name:\n            raise ValueError(\"invalid member\")\n        with (destination / name).open(\"xb\") as stream:\n            stream.write(archive.read(member))\n",
+      "issues": []
+    },
+    {
+      "path": "src/documents/ownership.py",
+      "source": "def read(records: dict[str, tuple[str, bytes]], actor: str, requested_id: str) -> bytes:\n    \"\"\"所有者が一致する場合だけ本文を返す。\"\"\"\n    owner, body = records[requested_id]\n    if owner != actor:\n        raise PermissionError\n    return body\n",
+      "issues": []
+    },
+    {
+      "path": "src/money/conversion.py",
+      "source": "from decimal import Decimal, ROUND_HALF_UP\n\n\ndef cents(amount: Decimal) -> int:\n    \"\"\"有限な通貨単位の Decimal をセントへ変換し、半端は四捨五入する。入力の桁数に上限は設けない。\"\"\"\n    return int((amount * 100).quantize(Decimal(\"1\"), rounding=ROUND_HALF_UP))\n",
+      "issues": [
+        {
+          "symbol": "cents",
+          "marker": "return int",
+          "issue_type": "numeric-precision-error",
+          "severity": "medium",
+          "evidence": "Decimal 演算の周囲コンテキスト精度に依存する。精度28で有限値 Decimal(\"1e26\") や Decimal(\"1e30\") をセントにすると、quantize が InvalidOperation を送出する。正負とも再現し、入力の桁数に上限を設けない契約に反する。"
+        }
+      ]
+    },
+    {
+      "path": "src/tabular/reader.py",
+      "source": "import csv\nfrom io import StringIO\n\n\ndef read(line: str) -> list[str]:\n    \"\"\"標準 CSV の一行を読む。空の文書では空一覧を返す。\"\"\"\n    return next(csv.reader(StringIO(line)), [])\n",
+      "issues": []
+    },
+    {
+      "path": "src/batching/complete.py",
+      "source": "def split(values: list[int], size: int) -> list[list[int]]:\n    \"\"\"正の size ごとに全要素を分割し、末尾も残す。\"\"\"\n    if size <= 0:\n        raise ValueError(\"positive size required\")\n    return [values[index:index + size] for index in range(0, len(values), size)]\n",
+      "issues": []
+    },
+    {
+      "path": "src/tasks/propagation.py",
+      "source": "from collections.abc import Awaitable\n\n\nasync def execute(operation: Awaitable[object]) -> object:\n    \"\"\"通常失敗は None とし、キャンセルなどの制御例外は伝播する。\"\"\"\n    try:\n        return await operation\n    except Exception:\n        return None\n",
+      "issues": []
+    },
+    {
+      "path": "src/transport/context.py",
+      "source": "import ssl\n\n\ndef client_context() -> ssl.SSLContext:\n    \"\"\"標準 CA とホスト名検証を使用する TLS クライアント設定を返す。\"\"\"\n    return ssl.create_default_context()\n",
+      "issues": []
+    },
+    {
+      "path": "src/binary/validation.py",
+      "source": "import base64\n\n\ndef decode(value: bytes) -> bytes:\n    \"\"\"標準 Base64 を読み、不正なアルファベットは拒否する。\"\"\"\n    return base64.b64decode(value, validate=True)\n",
+      "issues": []
+    },
+    {
+      "path": "src/cache_clock/freshness.py",
+      "source": "def fresh(saved_at: float, ttl_seconds: int, now: float) -> bool:\n    \"\"\"時刻と TTL は秒単位。未来時刻は無効とし、期限内だけ有効とする。\"\"\"\n    return 0 <= now - saved_at <= ttl_seconds\n",
+      "issues": []
+    }
+  ]
+}

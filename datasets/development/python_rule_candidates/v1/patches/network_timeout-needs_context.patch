@@ -1,0 +1,7 @@
+diff --git a/src/network_timeout.py b/src/network_timeout.py
+--- /dev/null
++++ b/src/network_timeout.py
+@@ -0,0 +1,3 @@
++def fetch_external(client, url):
++    """タイムアウト契約が未提示のクライアントを使う。"""
++    return client.get(url, timeout=client.timeout)

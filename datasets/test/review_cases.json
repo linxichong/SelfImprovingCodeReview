@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "model": "local-test-dataset-v1",
+  "default_result": {
+    "payload": {
+      "schema_version": 1,
+      "findings": []
+    },
+    "usage": {
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "latency_ms": 0,
+      "cost_usd": "0"
+    }
+  },
+  "cases": [
+    {
+      "case_id": "valid-finding",
+      "match_all": [
+        "TEST_VALID_FINDING"
+      ],
+      "result": {
+        "payload": {
+          "schema_version": 1,
+          "findings": []
+        },
+        "usage": {
+          "input_tokens": 10,
+          "output_tokens": 2,
+          "latency_ms": 1,
+          "cost_usd": "0"
+        }
+      }
+    },
+    {
+      "case_id": "invalid-schema",
+      "match_all": [
+        "TEST_INVALID_SCHEMA"
+      ],
+      "result": {
+        "payload": {
+          "schema_version": 1,
+          "findings": [],
+          "unknown": true
+        },
+        "usage": {
+          "input_tokens": 8,
+          "output_tokens": 1,
+          "latency_ms": 1,
+          "cost_usd": "0"
+        }
+      }
+    }
+  ]
+}

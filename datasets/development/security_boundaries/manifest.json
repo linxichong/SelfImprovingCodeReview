@@ -1,0 +1,211 @@
+{
+  "schema_version": 1,
+  "split": "development",
+  "approval_status": "AI_AUTHORED_DEVELOPMENT_ONLY",
+  "cases": [
+    {
+      "case_id": "jwt-vulnerable",
+      "family": "jwt",
+      "variant": "vulnerable",
+      "patch": "patches/jwt-vulnerable.patch",
+      "expected_outcome": "findings",
+      "expected_findings": [
+        {
+          "symbol": "can_download_invoice",
+          "issue_type": "jwt-signature-not-verified",
+          "evidence_quote": "        options={\"verify_signature\": False},",
+          "start_line": 12,
+          "file": "src/billing/permissions.py"
+        },
+        {
+          "symbol": "can_close_ledger",
+          "issue_type": "jwt-signature-not-verified",
+          "evidence_quote": "        options={\"verify_signature\": False},",
+          "start_line": 25,
+          "file": "src/billing/permissions.py"
+        }
+      ],
+      "context_questions": []
+    },
+    {
+      "case_id": "jwt-safe",
+      "family": "jwt",
+      "variant": "safe",
+      "patch": "patches/jwt-safe.patch",
+      "expected_outcome": "no-target-findings",
+      "expected_findings": [],
+      "context_questions": []
+    },
+    {
+      "case_id": "jwt-context",
+      "family": "jwt",
+      "variant": "context",
+      "patch": "patches/jwt-context.patch",
+      "expected_outcome": "needs-context",
+      "expected_findings": [],
+      "context_questions": [
+        {
+          "symbol": "read_invoice_claims",
+          "question": "返却クレームは認証・認可に使われるか。別の場所で署名を検証しているか。"
+        },
+        {
+          "symbol": "read_ledger_claims",
+          "question": "返却クレームは認証・認可に使われるか。別の場所で署名を検証しているか。"
+        }
+      ]
+    },
+    {
+      "case_id": "flask-vulnerable",
+      "family": "flask",
+      "variant": "vulnerable",
+      "patch": "patches/flask-vulnerable.patch",
+      "expected_outcome": "findings",
+      "expected_findings": [
+        {
+          "symbol": "serve_accounts",
+          "issue_type": "debug-mode-enabled",
+          "evidence_quote": "    app.run(host=\"::\", port=8091, debug=True, use_reloader=False)",
+          "start_line": 6,
+          "file": "src/service/entrypoints.py"
+        },
+        {
+          "symbol": "serve_exports",
+          "issue_type": "debug-mode-enabled",
+          "evidence_quote": "    app.run(host=\"::\", port=8092, debug=True, use_reloader=False)",
+          "start_line": 11,
+          "file": "src/service/entrypoints.py"
+        }
+      ],
+      "context_questions": []
+    },
+    {
+      "case_id": "flask-safe",
+      "family": "flask",
+      "variant": "safe",
+      "patch": "patches/flask-safe.patch",
+      "expected_outcome": "no-target-findings",
+      "expected_findings": [],
+      "context_questions": []
+    },
+    {
+      "case_id": "flask-context",
+      "family": "flask",
+      "variant": "context",
+      "patch": "patches/flask-context.patch",
+      "expected_outcome": "needs-context",
+      "expected_findings": [],
+      "context_questions": [
+        {
+          "symbol": "serve_accounts",
+          "question": "runtime_options の debug と host の値、および本番での外部到達可能性を確認する。"
+        },
+        {
+          "symbol": "serve_exports",
+          "question": "runtime_options の debug と host の値、および本番での外部到達可能性を確認する。"
+        }
+      ]
+    },
+    {
+      "case_id": "xml-vulnerable",
+      "family": "xml",
+      "variant": "vulnerable",
+      "patch": "patches/xml-vulnerable.patch",
+      "expected_outcome": "findings",
+      "expected_findings": [
+        {
+          "symbol": "parse_upload",
+          "issue_type": "xml-external-entity",
+          "evidence_quote": "        resolve_entities=True, load_dtd=True, no_network=False",
+          "start_line": 7,
+          "file": "src/imports/documents.py"
+        },
+        {
+          "symbol": "parse_attachment",
+          "issue_type": "xml-external-entity",
+          "evidence_quote": "        resolve_entities=True, load_dtd=True, no_network=False",
+          "start_line": 15,
+          "file": "src/imports/documents.py"
+        }
+      ],
+      "context_questions": []
+    },
+    {
+      "case_id": "xml-safe",
+      "family": "xml",
+      "variant": "safe",
+      "patch": "patches/xml-safe.patch",
+      "expected_outcome": "no-target-findings",
+      "expected_findings": [],
+      "context_questions": []
+    },
+    {
+      "case_id": "xml-context",
+      "family": "xml",
+      "variant": "context",
+      "patch": "patches/xml-context.patch",
+      "expected_outcome": "needs-context",
+      "expected_findings": [],
+      "context_questions": [
+        {
+          "symbol": "parse_upload",
+          "question": "document が外部入力か。parser の外部実体解決、DTD、ネットワーク設定を確認する。"
+        },
+        {
+          "symbol": "parse_attachment",
+          "question": "document が外部入力か。parser の外部実体解決、DTD、ネットワーク設定を確認する。"
+        }
+      ]
+    },
+    {
+      "case_id": "xss-vulnerable",
+      "family": "xss",
+      "variant": "vulnerable",
+      "patch": "patches/xss-vulnerable.patch",
+      "expected_outcome": "findings",
+      "expected_findings": [
+        {
+          "symbol": "render_notice",
+          "issue_type": "cross-site-scripting",
+          "evidence_quote": "    return Markup(\"<section>\" + http_text + \"</section>\")",
+          "start_line": 6,
+          "file": "src/pages/fragments.py"
+        },
+        {
+          "symbol": "render_caption",
+          "issue_type": "cross-site-scripting",
+          "evidence_quote": "    return Markup(\"<section>\" + http_text + \"</section>\")",
+          "start_line": 11,
+          "file": "src/pages/fragments.py"
+        }
+      ],
+      "context_questions": []
+    },
+    {
+      "case_id": "xss-safe",
+      "family": "xss",
+      "variant": "safe",
+      "patch": "patches/xss-safe.patch",
+      "expected_outcome": "no-target-findings",
+      "expected_findings": [],
+      "context_questions": []
+    },
+    {
+      "case_id": "xss-context",
+      "family": "xss",
+      "variant": "context",
+      "patch": "patches/xss-context.patch",
+      "expected_outcome": "needs-context",
+      "expected_findings": [],
+      "context_questions": [
+        {
+          "symbol": "render_notice",
+          "question": "fragment の取得元、上流での HTML 無害化、返却値の描画先を確認する。"
+        },
+        {
+          "symbol": "render_caption",
+          "question": "fragment の取得元、上流での HTML 無害化、返却値の描画先を確認する。"
+        }
+      ]
+    }
+  ]
+}

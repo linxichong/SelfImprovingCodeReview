@@ -1,0 +1,15 @@
+id: SECURITY.TLS_VERIFICATION_DISABLED
+category: security
+severity: high
+scope:
+  languages:
+  - python
+  keywords:
+  - verify=
+  - verify =
+  - CERT_NONE
+  - check_hostname
+  - ignore-certificate-errors
+  - ignore-ssl-errors
+instruction: 外部 HTTPS 通信で証明書検証を明示的に無効化した経路を確認する。検証を無効化する引数と外部通信先が提示コードで確定する場合だけ報告する。既定値が安全、明示した信頼
+  CA、ネットワークを使わないテスト用の偽物は報告しない。変数やラッパーの実体、対象環境が不明なら needs_context=true とし、任意コード実行など未確認の影響を断定しない。

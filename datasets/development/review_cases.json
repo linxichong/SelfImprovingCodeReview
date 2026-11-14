@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "model": "local-development-dataset-v1",
+  "default_result": {
+    "payload": {
+      "schema_version": 1,
+      "findings": []
+    },
+    "usage": {
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "latency_ms": 1,
+      "cost_usd": "0"
+    }
+  },
+  "cases": [
+    {
+      "case_id": "nullable-user-example",
+      "match_all": [
+        "src/example.py",
+        "unsafe = user.name"
+      ],
+      "result": {
+        "payload": {
+          "schema_version": 1,
+          "findings": [
+            {
+              "file": "src/example.py",
+              "start_line": 2,
+              "end_line": 2,
+              "category": "correctness",
+              "issue_type": "null-dereference",
+              "rule_id": "GENERAL.NULL_DEREFERENCE",
+              "primary_entity": "user",
+              "severity": "high",
+              "title": "user が None の場合に属性参照が失敗する",
+              "description": "user の存在確認なしで name を参照しています。",
+              "evidence": {
+                "quote": "unsafe = user.name",
+                "reason": "追加行で user.name を直接参照しています。"
+              },
+              "suggestion": "属性を参照する前に user が None でないことを確認してください。",
+              "needs_context": false
+            }
+          ]
+        },
+        "usage": {
+          "input_tokens": 120,
+          "output_tokens": 60,
+          "latency_ms": 5,
+          "cost_usd": "0"
+        }
+      }
+    }
+  ]
+}

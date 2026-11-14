@@ -1,0 +1,10 @@
+id: PYTHON.IDENTITY_COMPARISON
+category: correctness
+severity: medium
+scope:
+  languages: [python]
+  keywords: ['is "', "is '", "is 0", "is 1", 'is not "', "is not '", "== True", "== False"]
+instruction: >
+  文字列、数値、タプルなどの値比較に is または is not を使用し、実装依存の同一性により
+  判定を誤る場合に指摘する。None や明示的センチネルとの同一性比較は正しいため指摘しない。
+  None に対する == の使用は実害が示されない限り重大な不具合として扱わない。

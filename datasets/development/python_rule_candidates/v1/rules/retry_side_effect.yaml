@@ -1,0 +1,12 @@
+id: PYTHON.RETRY_SIDE_EFFECT
+category: reliability
+severity: high
+scope:
+  languages:
+  - python
+  keywords:
+  - retry
+  - range(
+  - 'while '
+instruction: 副作用を持つ操作の再試行で、同一操作が重複実行される経路を確認する。受信側が処理を完了した後にも応答喪失で再試行し得ることと、固定の冪等キーや重複排除がないことが提示契約から確認できる場合だけ報告する。読取り専用操作、全試行で同一の冪等キーを使用し受信側の重複排除が明示された操作は報告しない。送信先の契約や副作用が不明なら
+  needs_context=true とする。再試行ループだけで問題を断定しない。

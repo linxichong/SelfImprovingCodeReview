@@ -1,0 +1,12 @@
+diff --git a/src/attribute_initialization.py b/src/attribute_initialization.py
+--- /dev/null
++++ b/src/attribute_initialization.py
+@@ -0,0 +1,8 @@
++class Driver:
++    """初期化の実体が未提示のドライバー。"""
++    def __init__(self, initialize):
++        """外部から与えられた初期化処理を呼ぶ。"""
++        initialize(self)
++    def run(self):
++        """初期化された可能性のある属性を使う。"""
++        return self._driver

@@ -1,0 +1,10 @@
+id: PYTHON.RESOURCE_LEAK
+category: reliability
+severity: high
+scope:
+  languages: [python]
+  keywords: [open(, socket(, connect(, Lock(]
+instruction: >
+  ファイル、ソケット、DB 接続、またはロックを取得した後、例外経路や早期 return で確実に
+  解放されない場合に指摘する。with、finally、ExitStack、またはフレームワーク管理の
+  ライフサイクルにより解放が保証される場合は指摘しない。

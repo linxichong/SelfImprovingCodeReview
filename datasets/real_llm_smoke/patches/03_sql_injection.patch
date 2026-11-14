@@ -1,0 +1,7 @@
+diff --git a/src/user_repository.py b/src/user_repository.py
+--- a/src/user_repository.py
++++ b/src/user_repository.py
+@@ -1,2 +1,2 @@
+ def find_user(connection, email):
+-    return connection.execute("SELECT * FROM users WHERE email = ?", (email,)).fetchone()
++    return connection.execute(f"SELECT * FROM users WHERE email = '{email}'").fetchone()

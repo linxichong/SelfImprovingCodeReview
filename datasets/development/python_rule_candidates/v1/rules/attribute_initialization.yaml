@@ -1,0 +1,10 @@
+id: PYTHON.ATTRIBUTE_INITIALIZATION
+category: correctness
+severity: high
+scope:
+  languages:
+  - python
+  keywords:
+  - self.
+instruction: 実行可能な公開経路で、存在しないインスタンス属性を読む箇所を確認する。コンストラクター、継承、呼出順、分岐条件、__getattr__、明示的な初期化契約を照合する。全ての対象経路で代入がないことが可視で、直接呼出しまたは設定から到達する場合だけ報告する。子クラスが使用前に初期化する場合や安全な
+  getattr の既定値がある場合は報告しない。親クラスや初期化関数が未提示なら needs_context=true とする。基底クラス単体に代入がないだけで報告しない。

@@ -1,0 +1,66 @@
+# M5 のプロジェクト統制、メモリ生命周期および専門担当を準備する設定例。
+# 登録・関連付け完了までは governance.enabled を false のまま使用する。
+schema_version: 1
+project_id: example-project
+
+database:
+  path: .review/m5-governance-example.db
+
+llm:
+  provider: dataset
+  dataset_path: datasets/development/review_cases.json
+
+review:
+  mode: rules
+  context_tools_enabled: true
+  reflection_enabled: true
+  max_workers: 2
+
+memory:
+  # 統制 CLI を実行できる内部担当者 ID を明示する。
+  maintainers:
+    - tanaka
+  is_production: false
+
+security:
+  allow_external_source: false
+
+scm:
+  enabled: false
+  provider: github
+  # bind-repository の --external-repository と同じ値を指定する。
+  repository_external_id: owner/repository
+  publish_enabled: false
+
+governance:
+  # project register、bind-repository、必要な adopt-existing の完了後に true にする。
+  enabled: false
+  memory_lifecycle_enabled: false
+  # 高危険度の変更だけに最大一件の補助担当を追加する。実 LLM では追加使用量に注意する。
+  specialized_reviewers_enabled: false
+  # 同じレビューの重複実行と古い所有者による保存を防ぐ。M5 有効化後に明示的に有効にする。
+  execution_leases_enabled: false
+  max_reviewer_profiles: 2
+  additional_reviewer_risk_threshold: high
+  specialist_total_tokens: 6000
+  specialist_max_output_tokens: 3000
+  revalidation_default_days: 180
+  # リースの有効時間。最長の通常処理ではなく、心拍停止を検出する猶予を秒で指定する。
+  lease_seconds: 180
+  # 独立接続からリースを延長する間隔。lease_seconds より短い値にする。
+  heartbeat_seconds: 30
+  # 各 SQLite 接続がロック解消を待つ最大時間（ミリ秒）。
+  sqlite_busy_timeout_ms: 5000
+
+# 既定値は外部送信を行わない。OpenTelemetry を使う環境では telemetry 任意依存を同期し、
+# enabled: true、provider: opentelemetry、HTTPS endpoint と完全一致の allowed_hosts を指定する。
+# 認証ヘッダーは設定へ保存せず、実行環境の REVIEW_OTEL_EXPORTER_HEADERS だけから渡す。
+telemetry:
+  enabled: false
+  provider: noop
+  endpoint: null
+  allowed_hosts: []
+  service_name: self-improving-code-review
+  sample_ratio: 0.0
+  export_timeout_seconds: 5
+  max_queue_size: 2048

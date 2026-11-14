@@ -1,0 +1,7 @@
+diff --git a/src/sensitive_logging.py b/src/sensitive_logging.py
+--- /dev/null
++++ b/src/sensitive_logging.py
+@@ -0,0 +1,3 @@
++def log_authentication(logger, value, masker):
++    """機密区分とマスク契約が未提示の値を記録する。"""
++    logger.info("authentication value=%s", masker(value))

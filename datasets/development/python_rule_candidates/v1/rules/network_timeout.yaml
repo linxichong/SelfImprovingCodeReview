@@ -1,0 +1,14 @@
+id: PYTHON.NETWORK_TIMEOUT
+category: reliability
+severity: medium
+scope:
+  languages:
+  - python
+  keywords:
+  - requests.
+  - httpx.
+  - timeout=
+  - timeout =
+instruction: 外部 HTTP 呼出しに有効な待ち時間上限がない経路を確認する。requests の既知 API で timeout 省略または None
+  が直接確認できる場合を対象とする。有限の正値、明示された上限を持つクライアントやラッパーは報告しない。httpx は既定タイムアウトを持つため省略だけで無制限と判断しない。クライアント実装や上限の有無が不明なら
+  needs_context=true とする。単純な引数パターンは静的検査へ委譲し、LLM は可視の呼出契約を補足する。

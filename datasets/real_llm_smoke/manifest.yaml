@@ -1,0 +1,39 @@
+schema_version: 1
+dataset_id: real-llm-smoke-python-v2
+language: python
+purpose: 真实 AI 网关连接与响应冒烟检查
+cases:
+  - case_id: PY-SMOKE-002
+    patch: patches/02_command_injection.patch
+    should_find: true
+    expected_findings:
+      - file: src/git_command.py
+        start_line: 2
+        category: security
+        severity: critical
+        accepted_issue_types:
+          - command-injection
+          - shell-injection
+        baseline_rule_id: GENERAL.COMMAND_INJECTION
+        recommended_project_rule_id: SECURITY.COMMAND_INJECTION
+        root_cause: 未信頼の revision をシェルコマンドへ連結して shell=True で実行する
+
+  - case_id: PY-SMOKE-003
+    patch: patches/03_sql_injection.patch
+    should_find: true
+    expected_findings:
+      - file: src/user_repository.py
+        start_line: 2
+        category: security
+        severity: critical
+        accepted_issue_types:
+          - sql-injection
+        baseline_rule_id: GENERAL.SQL_INJECTION
+        recommended_project_rule_id: SECURITY.SQL_INJECTION
+        root_cause: 未信頼の email を SQL 文字列へ直接埋め込む
+
+  - case_id: PY-SMOKE-007
+    patch: patches/07_safe_parameterized_sql.patch
+    should_find: false
+    expected_findings: []
+    control_reason: 利用者入力と件数上限をプレースホルダーで渡している

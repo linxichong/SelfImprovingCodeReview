@@ -1,0 +1,17 @@
+schema_version: 1
+project_id: self-improving-code-review
+
+database:
+  path: .review/development.db
+
+llm:
+  provider: dataset
+  dataset_path: datasets/development/review_cases.json
+
+security:
+  allow_external_source: false
+
+memory:
+  maintainers:
+    - reviewer-1
+  is_production: false

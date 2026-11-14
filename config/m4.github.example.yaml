@@ -1,0 +1,43 @@
+# GitHub Pull Request を既存 M3 パイプラインでレビューする安全な設定例。
+# REVIEW_SCM_TOKEN は環境変数だけで設定し、このファイルへ記載しない。
+schema_version: 1
+project_id: github-review-example
+
+database:
+  path: .review/m4-github-example.db
+
+llm:
+  provider: dataset
+  dataset_path: datasets/development/review_cases.json
+
+review:
+  mode: rules
+  context_tools_enabled: true
+  reflection_enabled: true
+  max_workers: 2
+
+security:
+  # dataset 使用時は外部 LLM 送信を許可しない。
+  allow_external_source: false
+
+scm:
+  # 実行前に true へ変更し、下の二つの識別子も実値へ変更する。
+  enabled: false
+  provider: github
+  repository_external_id: owner/repository
+  api_base_url: https://api.github.com
+  # 既定はドライラン。true だけでは投稿せず、CLI の --publish も必要。
+  publish_enabled: false
+  feedback_sync_enabled: false
+  include_drafts: false
+  bot_actor_external_id: self-reviewer-bot
+  # 同期を有効にする場合、GitHub ログイン名を内部担当者 ID へ明示対応する。
+  # 例: feedback_actor_mapping: {github-reviewer: reviewer-1}
+  feedback_actor_mapping: {}
+  allowed_api_hosts:
+    - api.github.com
+  max_inline_comments: 20
+  request_timeout_seconds: 30
+  # GitHub 応答は Content-Length と上限付き読出しの両方で 8 MiB に制限する。
+  max_response_bytes: 8388608
+  max_retries: 2

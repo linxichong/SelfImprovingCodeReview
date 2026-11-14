@@ -1,0 +1,22 @@
+diff --git a/src/imports/documents.py b/src/imports/documents.py
+new file mode 100644
+--- /dev/null
++++ b/src/imports/documents.py
+@@ -0,0 +1,17 @@
++from lxml import etree
++
++
++def parse_upload(http_body: bytes) -> object:
++    """未認証の利用者がアップロードした XML を解析して返す。"""
++    parser = etree.XMLParser(
++        resolve_entities=False, load_dtd=False, no_network=True
++    )
++    return etree.fromstring(http_body, parser)
++
++
++def parse_attachment(http_body: bytes) -> object:
++    """未認証の利用者がアップロードした XML を解析して返す。"""
++    parser = etree.XMLParser(
++        resolve_entities=False, load_dtd=False, no_network=True
++    )
++    return etree.fromstring(http_body, parser)

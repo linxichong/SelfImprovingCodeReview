@@ -1,0 +1,10 @@
+diff --git a/src/attribute_initialization.py b/src/attribute_initialization.py
+--- /dev/null
++++ b/src/attribute_initialization.py
+@@ -0,0 +1,6 @@
++class Driver:
++    """指定されたダウンロード先を設定する。"""
++    def __init__(self, download_folder):
++        """非空時に保存先を構成する。"""
++        if download_folder:
++            self.preferences = {"directory": self._download_folder}

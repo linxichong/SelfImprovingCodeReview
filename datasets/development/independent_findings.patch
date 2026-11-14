@@ -1,0 +1,11 @@
+diff --git a/src/labels.py b/src/labels.py
+new file mode 100644
+--- /dev/null
++++ b/src/labels.py
+@@ -0,0 +1,6 @@
++def primary(value: dict[str, str] | None) -> str:
++    return value.get("name", "")
++
++
++def secondary(value: dict[str, str] | None) -> str:
++    return value.get("title", "")

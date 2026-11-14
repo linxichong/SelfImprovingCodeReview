@@ -1,0 +1,10 @@
+id: SECURITY.PATH_TRAVERSAL
+category: security
+severity: critical
+scope:
+  languages: [python]
+  keywords: [.read_text(, .write_text(, open(, Path(]
+instruction: >
+  未信頼のパス要素を基準ディレクトリへ結合し、正規化後の所属確認なしで読み書きする経路を
+  パストラバーサルとして指摘する。resolve 後の is_relative_to 等で基準内に制限している場合や、
+  値が信頼済み定数である場合は指摘しない。

@@ -1,0 +1,12 @@
+diff --git a/src/retry_side_effect.py b/src/retry_side_effect.py
+--- /dev/null
++++ b/src/retry_side_effect.py
+@@ -0,0 +1,8 @@
++def submit(api, payload):
++    """呼出し先の副作用と冪等性契約は未提示である。"""
++    for retry in range(2):
++        try:
++            return api.submit(payload)
++        except TimeoutError:
++            if retry == 1:
++                raise

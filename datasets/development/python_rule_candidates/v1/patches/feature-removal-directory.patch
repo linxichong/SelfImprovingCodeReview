@@ -1,0 +1,6 @@
+diff --git a/run.bat b/run.bat
+--- a/run.bat
++++ b/run.bat
+@@ -1 +1 @@
+-xcopy .\proxy .\dist\proxy\ /e /y
++@REM xcopy .\proxy .\dist\proxy\ /e /y

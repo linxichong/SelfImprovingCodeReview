@@ -1,6 +1,6 @@
 # Self-Improving AI Code Reviewer
 
-## Feedback Loop を活用した自己改善型 AI Code Review Agent
+## 利用反馈闭环持续改进的 AI 代码审查智能体
 
 ---
 
@@ -49,7 +49,7 @@ Better Review
 
 日文主题：
 
-**Feedback Loopを活用した自己改善型AI Code Review Agent**
+**利用反馈闭环持续改进的 AI 代码审查智能体**
 
 目标：
 
@@ -70,7 +70,7 @@ Better Review
 
 ```text
 AI:
-このメソッドには null チェックを追加することを推奨します。
+建议为此方法添加空值检查。
 ```
 
 开发者反馈：
@@ -78,8 +78,7 @@ AI:
 ```text
 👎 False Positive
 
-この値は Spring Framework 側で non-null が保証されているため、
-追加の null チェックは不要。
+Spring Framework 已保证该值非空，无需额外的空值检查。
 ```
 
 系统不应该只保存：
@@ -197,12 +196,10 @@ Do not repeat the same false positive
 
 ```text
 Python
-FastAPI
 Pydantic
 SQLite
 LLM API
 Git CLI
-Simple Web UI
 ```
 
 第一版暂时不强依赖：
@@ -863,7 +860,7 @@ Better Review
 
 日文表达：
 
-> **モデルを学習させるのではなく、FeedbackからContextを成長させる。**
+> **通过反馈积累审查上下文，无需训练模型。**
 
 ---
 
@@ -1415,12 +1412,10 @@ python review.py --git-diff --output review.json
 
 ```text
 Python
-FastAPI
 Pydantic
 SQLite
 LLM API
 Git CLI
-Simple Web UI
 ```
 
 ---
@@ -1551,7 +1546,7 @@ Development Knowledge Agent
 
 核心一句：
 
-> **モデルを学習させるのではなく、FeedbackからContextを成長させる。**
+> **通过反馈积累审查上下文，无需训练模型。**
 
 最终希望验证：
 

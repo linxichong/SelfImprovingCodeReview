@@ -1,0 +1,7 @@
+diff --git a/src/sensitive_logging.py b/src/sensitive_logging.py
+--- /dev/null
++++ b/src/sensitive_logging.py
+@@ -0,0 +1,3 @@
++def log_authentication(logger, password):
++    """認証用秘密値を記録せず成否だけを記録する。"""
++    logger.info("authentication completed")

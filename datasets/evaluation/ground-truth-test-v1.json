@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "split": "test",
+  "version": 1,
+  "issues": [
+    {
+      "sequence": 1,
+      "change_ref": "6e22daeb05f872498cbc30e6c4434168de5bc9b7",
+      "file": "datasets/real_llm_smoke/patches/02_command_injection.patch",
+      "start_line": 7,
+      "issue_type": "command-injection",
+      "rule_id": "PY.SECURITY.COMMAND_INJECTION",
+      "severity": "critical",
+      "evidence": "外部入力をシェル文字列へ連結する結合確認用ケースです。",
+      "origin": "integration-sample",
+      "created_by": "dataset-author",
+      "verified_by": "dataset-reviewer",
+      "approved_by": "reviewer-1"
+    },
+    {
+      "sequence": 2,
+      "change_ref": "6e22daeb05f872498cbc30e6c4434168de5bc9b7",
+      "file": "datasets/real_llm_smoke/patches/03_sql_injection.patch",
+      "start_line": 6,
+      "issue_type": "sql-injection",
+      "rule_id": "PY.SECURITY.SQL_INJECTION",
+      "severity": "critical",
+      "evidence": "外部入力を SQL 文字列へ連結する結合確認用ケースです。",
+      "origin": "integration-sample",
+      "created_by": "dataset-author",
+      "verified_by": "dataset-reviewer",
+      "approved_by": "reviewer-1"
+    }
+  ]
+}

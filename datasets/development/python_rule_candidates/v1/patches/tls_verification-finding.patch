@@ -1,0 +1,9 @@
+diff --git a/src/tls_verification.py b/src/tls_verification.py
+--- /dev/null
++++ b/src/tls_verification.py
+@@ -0,0 +1,5 @@
++import requests
++
++def fetch_external(url):
++    """利用者指定の外部 HTTPS URL を取得する。"""
++    return requests.get(url, verify=False, timeout=5)

@@ -1,0 +1,9 @@
+id: PYTHON.SHARED_MUTABLE_STATE
+category: correctness
+severity: high
+scope:
+  languages: [python]
+instruction: >
+  クラス属性、モジュール大域値、またはクロージャが可変状態を意図せず共有し、インスタンス間、
+  要求間、スレッド間で値が漏れる実行経路を指摘する。読み取り専用値、同期済み状態、
+  明示されたキャッシュ、または各呼び出しで新規作成されるローカル値は指摘しない。
