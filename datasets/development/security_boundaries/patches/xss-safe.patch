@@ -1,0 +1,17 @@
+diff --git a/src/pages/fragments.py b/src/pages/fragments.py
+new file mode 100644
+--- /dev/null
++++ b/src/pages/fragments.py
+@@ -0,0 +1,12 @@
++from html import escape
++from markupsafe import Markup
++
++
++def render_notice(http_text: str) -> Markup:
++    """HTTP 入力を HTML 本文へ埋め込み、ブラウザー向けに返す。"""
++    return Markup("<section>" + escape(http_text, quote=True) + "</section>")
++
++
++def render_caption(http_text: str) -> Markup:
++    """HTTP 入力を HTML 本文へ埋め込み、ブラウザー向けに返す。"""
++    return Markup("<section>" + escape(http_text, quote=True) + "</section>")

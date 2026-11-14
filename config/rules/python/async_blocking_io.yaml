@@ -1,0 +1,10 @@
+id: PYTHON.ASYNC_BLOCKING_IO
+category: performance
+severity: medium
+scope:
+  languages: [python]
+  keywords: [async def, requests., time.sleep(, subprocess.run(]
+instruction: >
+  async 関数の実行経路で同期 I/O、time.sleep、または長時間の同期処理を直接呼び出し、
+  イベントループを停止させる場合に指摘する。非同期 API、executor、to_thread へ明示的に
+  委譲している場合や、非同期実行の根拠がない場合は指摘しない。

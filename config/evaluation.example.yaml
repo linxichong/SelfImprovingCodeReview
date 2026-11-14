@@ -1,0 +1,31 @@
+schema_version: 1
+project_id: m2-formal-evaluation-v3
+
+database:
+  path: .review/evaluation-v1.db
+
+llm:
+  provider: ai_gateway
+  base_url: https://aigw.ldjp-ai.link
+  model: gpt-5.6-luna
+  timeout_seconds: 60
+  max_retries: 2
+
+review:
+  mode: rules
+  rules_directory: config/rules
+  bundle_diff_tokens: 8000
+  rule_tokens: 1500
+  memory_tokens: 1200
+  max_output_tokens: 4000
+
+memory:
+  is_injection_enabled: false
+  maintainers:
+    - reviewer-1
+  is_production: false
+  max_memories: 5
+  per_memory_tokens: 200
+
+security:
+  allow_external_source: true

@@ -1,0 +1,12 @@
+diff --git a/src/retry_side_effect.py b/src/retry_side_effect.py
+--- /dev/null
++++ b/src/retry_side_effect.py
+@@ -0,0 +1,8 @@
++def submit_order(api, order, operation_id):
++    """受信側は同一冪等キーを重複排除し、operation_id は全試行で固定する。"""
++    for retry in range(2):
++        try:
++            return api.create_order(order, idempotency_key=operation_id)
++        except TimeoutError:
++            if retry == 1:
++                raise

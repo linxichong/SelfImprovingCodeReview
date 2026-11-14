@@ -1,0 +1,9 @@
+diff --git a/src/network_timeout.py b/src/network_timeout.py
+--- /dev/null
++++ b/src/network_timeout.py
+@@ -0,0 +1,5 @@
++import requests
++
++def fetch_external(url):
++    """外部 URL の応答を取得する。"""
++    return requests.get(url, timeout=None)

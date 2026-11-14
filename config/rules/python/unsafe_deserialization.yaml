@@ -1,0 +1,10 @@
+id: SECURITY.UNSAFE_DESERIALIZATION
+category: security
+severity: critical
+scope:
+  languages: [python]
+  keywords: [pickle.load, pickle.loads, marshal.load, marshal.loads, yaml.load]
+instruction: >
+  未信頼データを pickle、marshal、または安全な Loader を指定しない YAML 処理で復元し、
+  任意コード実行または不正オブジェクト生成につながる経路を指摘する。入力が信頼境界内で
+  完全性検証済みの場合や yaml.safe_load を使用する場合は指摘しない。

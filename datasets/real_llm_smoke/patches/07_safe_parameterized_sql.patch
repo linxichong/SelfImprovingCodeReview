@@ -1,0 +1,11 @@
+diff --git a/src/order_repository.py b/src/order_repository.py
+--- a/src/order_repository.py
++++ b/src/order_repository.py
+@@ -1,4 +1,5 @@
+-def find_orders(connection, customer_id):
++def find_orders(connection, customer_id, limit):
+     return connection.execute(
+-        "SELECT * FROM orders WHERE customer_id = ?", (customer_id,)
++        "SELECT * FROM orders WHERE customer_id = ? ORDER BY created_at DESC LIMIT ?",
++        (customer_id, limit),
+     ).fetchall()

@@ -1,0 +1,6 @@
+diff --git a/src/example.py b/src/example.py
+--- a/src/example.py
++++ b/src/example.py
+@@ -1 +1,2 @@
+ user = load_user()
++unsafe = user.name

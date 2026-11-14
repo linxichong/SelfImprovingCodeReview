@@ -1,0 +1,19 @@
+diff --git a/src/attribute_initialization.py b/src/attribute_initialization.py
+--- /dev/null
++++ b/src/attribute_initialization.py
+@@ -0,0 +1,15 @@
++class Base:
++    """サブクラスが初期化する資源を利用する。"""
++    def run(self):
++        """初期化後のドライバーを返す。"""
++        return self._driver
++
++class Child(Base):
++    """公開入口が生成する具象クラス。"""
++    def __init__(self, driver):
++        """使用前に依存を初期化する。"""
++        self._driver = driver
++
++def execute(driver):
++    """必ず具象クラスを経由する。"""
++    return Child(driver).run()

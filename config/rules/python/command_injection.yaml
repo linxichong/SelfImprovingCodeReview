@@ -1,0 +1,10 @@
+id: SECURITY.COMMAND_INJECTION
+category: security
+severity: critical
+scope:
+  languages: [python]
+  keywords: [subprocess, shell=True]
+instruction: >
+  未信頼入力を文字列のシェルコマンドへ組み込み、shell=True などで解釈させる実行経路を
+  コマンド注入として指摘する。引数配列を使用し、シェルを起動せず、入力が個別引数として
+  渡される実装は指摘しない。

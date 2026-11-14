@@ -1,0 +1,32 @@
+diff --git a/src/billing/permissions.py b/src/billing/permissions.py
+new file mode 100644
+--- /dev/null
++++ b/src/billing/permissions.py
+@@ -0,0 +1,27 @@
++import jwt
++
++
++def can_download_invoice(http_bearer_token: str, verification_key: str) -> bool:
++    """HTTP 入力から権限を決定する。検証鍵はサーバー側の信頼済み設定。"""
++    claims = jwt.decode(
++        http_bearer_token,
++        verification_key,
++        algorithms=["RS256"],
++        audience="billing-api",
++        issuer="https://identity.example.invalid",
++        options={"verify_signature": False},
++    )
++    return claims.get("role") == "billing"
++
++
++def can_close_ledger(http_bearer_token: str, verification_key: str) -> bool:
++    """HTTP 入力から権限を決定する。検証鍵はサーバー側の信頼済み設定。"""
++    claims = jwt.decode(
++        http_bearer_token,
++        verification_key,
++        algorithms=["RS256"],
++        audience="billing-api",
++        issuer="https://identity.example.invalid",
++        options={"verify_signature": False},
++    )
++    return claims.get("role") == "finance"

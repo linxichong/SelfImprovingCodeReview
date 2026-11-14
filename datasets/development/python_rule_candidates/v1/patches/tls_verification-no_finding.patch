@@ -1,0 +1,9 @@
+diff --git a/src/tls_verification.py b/src/tls_verification.py
+--- /dev/null
++++ b/src/tls_verification.py
+@@ -0,0 +1,5 @@
++import requests
++
++def fetch_external(url):
++    """既定の証明書検証で外部 URL を取得する。"""
++    return requests.get(url, verify=True, timeout=5)

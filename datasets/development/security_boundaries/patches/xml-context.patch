@@ -1,0 +1,16 @@
+diff --git a/src/imports/documents.py b/src/imports/documents.py
+new file mode 100644
+--- /dev/null
++++ b/src/imports/documents.py
+@@ -0,0 +1,11 @@
++from lxml import etree
++
++
++def parse_upload(document: bytes, parser: etree.XMLParser) -> object:
++    """入力の取得元とパーサー設定は、この差分には含まれない。"""
++    return etree.fromstring(document, parser)
++
++
++def parse_attachment(document: bytes, parser: etree.XMLParser) -> object:
++    """入力の取得元とパーサー設定は、この差分には含まれない。"""
++    return etree.fromstring(document, parser)

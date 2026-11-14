@@ -1,0 +1,12 @@
+schema_version: 1
+project_id: self-improving-code-review-test
+
+database:
+  path: .review/test.db
+
+llm:
+  provider: dataset
+  dataset_path: datasets/test/review_cases.json
+
+security:
+  allow_external_source: false

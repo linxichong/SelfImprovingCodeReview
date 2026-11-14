@@ -1,0 +1,12 @@
+id: SECURITY.SENSITIVE_LOGGING
+category: security
+severity: high
+scope:
+  languages:
+  - python
+  keywords:
+  - logger.
+  - logging.
+  - print(
+instruction: 認証情報または機密値がログ出力へ到達する経路を確認する。提示された入力契約とログ引数から秘密値を出力することが確認できる場合だけ報告する。固定の伏字、許可済み非機密
+  ID、値を含まない成否メッセージは報告しない。変数名だけで秘密と断定せず、マスク関数または入力の実体が不明なら needs_context=true とする。ログ例へ実際の秘密値を書かない。

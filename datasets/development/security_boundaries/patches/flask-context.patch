@@ -1,0 +1,16 @@
+diff --git a/src/service/entrypoints.py b/src/service/entrypoints.py
+new file mode 100644
+--- /dev/null
++++ b/src/service/entrypoints.py
+@@ -0,0 +1,11 @@
++from flask import Flask
++
++
++def serve_accounts(app: Flask, runtime_options: dict[str, object]) -> None:
++    """実行環境と設定の生成元は、この差分には含まれない。"""
++    app.run(**runtime_options)
++
++
++def serve_exports(app: Flask, runtime_options: dict[str, object]) -> None:
++    """実行環境と設定の生成元は、この差分には含まれない。"""
++    app.run(**runtime_options)

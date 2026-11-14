@@ -1,0 +1,6 @@
+diff --git a/run.bat b/run.bat
+--- a/run.bat
++++ b/run.bat
+@@ -1 +1 @@
+-copy proxy.zip .\dist\
++@REM copy proxy.zip .\dist\

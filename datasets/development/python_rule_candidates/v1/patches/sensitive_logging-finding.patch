@@ -1,0 +1,7 @@
+diff --git a/src/sensitive_logging.py b/src/sensitive_logging.py
+--- /dev/null
++++ b/src/sensitive_logging.py
+@@ -0,0 +1,3 @@
++def log_authentication(logger, password):
++    """利用者の認証用秘密値を受け取る。"""
++    logger.info("authentication value=%s", password)

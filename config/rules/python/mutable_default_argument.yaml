@@ -1,0 +1,10 @@
+id: PYTHON.MUTABLE_DEFAULT_ARGUMENT
+category: correctness
+severity: medium
+scope:
+  languages: [python]
+  keywords: ["=[]", "={}", "=set()", " = []", " = {}", " = set()"]
+instruction: >
+  関数またはメソッドの可変デフォルト引数が呼び出し間で共有され、変更結果が次の呼び出しへ
+  漏れる場合に指摘する。値を変更しないことが明白な場合や、共有キャッシュまたはセンチネル
+  として意図が明示されている場合は指摘しない。

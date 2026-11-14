@@ -1,0 +1,9 @@
+id: PYTHON.NULL_DEREFERENCE
+category: correctness
+severity: high
+scope:
+  languages: [python]
+instruction: >
+  None になり得る値を検証せずに属性参照、添字アクセス、反復、または呼び出しへ使用し、
+  実行時例外となる経路が差分から確認できる場合だけ指摘する。型契約、直前の検証、
+  または到達条件により None が除外される場合は指摘しない。

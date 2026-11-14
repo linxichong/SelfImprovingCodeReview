@@ -1,0 +1,29 @@
+# M3 の追加コード取得、自己検証、並列処理をローカルで確認する設定例。
+# dataset プロバイダーだけを使用するため、ネットワークと API キーは不要。
+schema_version: 1
+project_id: self-improving-code-review-m3-example
+
+database:
+  path: .review/m3-example.db
+
+llm:
+  provider: dataset
+  dataset_path: datasets/development/m3_review_cases.example.json
+
+review:
+  mode: rules
+  # 追加コードをリポジトリ内から限定取得する。
+  context_tools_enabled: true
+  # 決定的検証後の候補を別ターンで自己検証する。
+  reflection_enabled: true
+  # 独立したレビュー単位を最大二件まで並列処理する。
+  max_workers: 2
+  # 以下は一ファイル、検索件数、Token、呼出回数の安全上限。
+  max_context_file_bytes: 1048576
+  max_tool_results: 20
+  dynamic_context_tokens: 6000
+  reflection_tokens: 2000
+  max_tool_calls: 5
+
+security:
+  allow_external_source: false

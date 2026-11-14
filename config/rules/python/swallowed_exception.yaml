@@ -1,0 +1,10 @@
+id: PYTHON.SWALLOWED_EXCEPTION
+category: reliability
+severity: medium
+scope:
+  languages: [python]
+  keywords: ["except ", "except:", pass, "return None"]
+instruction: >
+  例外を過度に広く捕捉し、記録、変換、再送出、または契約上明確な回復処理を行わずに
+  失敗を隠す経路を指摘する。意図が明確な任意処理、想定例外だけを扱う処理、または
+  呼び出し側が判別できる契約済みの結果へ変換する処理は指摘しない。

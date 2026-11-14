@@ -1,0 +1,12 @@
+diff --git a/src/retry_side_effect.py b/src/retry_side_effect.py
+--- /dev/null
++++ b/src/retry_side_effect.py
+@@ -0,0 +1,8 @@
++def submit_order(api, order):
++    """api.create_order は非冪等。処理後の応答喪失でも TimeoutError となり、重複排除はない。"""
++    for retry in range(2):
++        try:
++            return api.create_order(order)
++        except TimeoutError:
++            if retry == 1:
++                raise

@@ -1,0 +1,10 @@
+id: SECURITY.SQL_INJECTION
+category: security
+severity: critical
+scope:
+  languages: [python]
+  keywords: [execute(, executemany(, "SELECT ", "INSERT ", "UPDATE ", "DELETE "]
+instruction: >
+  未信頼入力を文字列連結、format、または f-string で SQL 本文へ埋め込む実行経路を
+  SQL 注入として指摘する。値をドライバーのプレースホルダーと別引数で渡す実装は
+  指摘しない。テーブル名など値として束縛できない識別子は、許可一覧の有無を確認する。

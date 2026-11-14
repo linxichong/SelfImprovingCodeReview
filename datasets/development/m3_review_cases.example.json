@@ -1,0 +1,111 @@
+{
+  "schema_version": 1,
+  "model": "local-m3-example-dataset-v1",
+  "default_result": {
+    "payload": {
+      "schema_version": 1,
+      "action": "final",
+      "tool_request": null,
+      "findings": []
+    },
+    "usage": {
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "latency_ms": 1,
+      "cost_usd": "0"
+    }
+  },
+  "cases": [
+    {
+      "case_id": "m3-reflection-supported",
+      "match_all": [
+        "自己検証担当"
+      ],
+      "result": {
+        "payload": {
+          "schema_version": 1,
+          "results": [
+            {
+              "finding_id": "B001-F001",
+              "status": "supported",
+              "reason_code": "EVIDENCE_SUFFICIENT"
+            }
+          ]
+        },
+        "usage": {
+          "input_tokens": 80,
+          "output_tokens": 20,
+          "latency_ms": 1,
+          "cost_usd": "0"
+        }
+      }
+    },
+    {
+      "case_id": "m3-final-after-context",
+      "match_all": [
+        "context-tool-result"
+      ],
+      "result": {
+        "payload": {
+          "schema_version": 1,
+          "action": "final",
+          "tool_request": null,
+          "findings": [
+            {
+              "file": "examples/m3/example.py",
+              "start_line": 4,
+              "end_line": 4,
+              "category": "correctness",
+              "issue_type": "null-dereference",
+              "rule_id": "GENERAL.NULL_DEREFERENCE",
+              "primary_entity": "user",
+              "severity": "high",
+              "title": "user が None の場合に属性参照が失敗する",
+              "description": "user の存在確認なしで name を参照しています。",
+              "evidence": {
+                "quote": "unsafe = user.name",
+                "reason": "追加行で user.name を直接参照しています。"
+              },
+              "suggestion": "属性を参照する前に user が None でないことを確認してください。",
+              "needs_context": false
+            }
+          ]
+        },
+        "usage": {
+          "input_tokens": 140,
+          "output_tokens": 70,
+          "latency_ms": 1,
+          "cost_usd": "0"
+        }
+      }
+    },
+    {
+      "case_id": "m3-request-project-message-source",
+      "match_all": [
+        "examples/m3/example.py",
+        "unsafe = user.name"
+      ],
+      "result": {
+        "payload": {
+          "schema_version": 1,
+          "action": "tool-request",
+          "tool_request": {
+            "tool_name": "read_file",
+            "path": "examples/m3/context.py",
+            "path_scope": [],
+            "query": null,
+            "start_line": 1,
+            "end_line": 20
+          },
+          "findings": []
+        },
+        "usage": {
+          "input_tokens": 100,
+          "output_tokens": 30,
+          "latency_ms": 1,
+          "cost_usd": "0"
+        }
+      }
+    }
+  ]
+}

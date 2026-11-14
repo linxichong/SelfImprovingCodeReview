@@ -1,0 +1,25 @@
+schema_version: 1
+project_id: self-improving-code-review
+
+database:
+  path: .review/gateway.db
+
+llm:
+  provider: ai_gateway
+  model: gpt-5.6-luna
+  timeout_seconds: 60
+  max_retries: 2
+
+# M3 は外部送信範囲と呼出回数が増えるため、明示的に有効化する。
+review:
+  context_tools_enabled: false
+  reflection_enabled: false
+  max_workers: 1
+  max_context_file_bytes: 1048576
+  max_tool_results: 20
+  dynamic_context_tokens: 6000
+  reflection_tokens: 2000
+  max_tool_calls: 5
+
+security:
+  allow_external_source: true
