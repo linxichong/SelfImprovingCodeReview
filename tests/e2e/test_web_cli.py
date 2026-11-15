@@ -39,11 +39,12 @@ def database(tmp_path: Path) -> Path:
                 'run-001', 'example-project', 'rules', 'success', 'deadbeef', 'test-model',
                 '1', 'hash', 'review_general_v1@5', 'hash', 'rules', 'hash', '1',
                 'unique', '2026-10-04T11:12:00Z', '2026-10-04T11:12:02Z',
-                '{"input_tokens":250,"output_tokens":135,"main_finding_count":1,"cost_usd":"0.01"}'
+                '{"input_tokens":250,"output_tokens":135,"main_finding_count":1,"cost_usd":"0.0016500549999999999"}'
             );
             INSERT INTO bundles VALUES (
                 'run-001','B001',1,'high','success',10,250,135,150,'0.01',NULL,NULL
             );
+            INSERT INTO bundle_files VALUES ('run-001','B001','order.py','review',NULL);
             INSERT INTO findings VALUES (
                 'run-001','finding-1','B001','order.py',13,13,'security','SQL_INJECTION',
                 'SECURITY.SQL_INJECTION','query','critical','Review <script>alert(1)</script>',
@@ -51,7 +52,7 @@ def database(tmp_path: Path) -> Path:
                 'fingerprint','query','valid','valid','reflection-skipped','[]',1
             );
             INSERT INTO filtered_files VALUES (
-                'run-001','README.md','excluded','unsupported'
+                'run-001','README.md','filter','document'
             );
             INSERT INTO scm_publications (
                 publication_id, run_id, provider, repository_external_id, change_external_id,
@@ -73,6 +74,9 @@ def service(database: Path, tmp_path: Path) -> Iterator[WebServer]:
             {
                 "run": {"run_id": "export-id", "project_id": "archive"},
                 "findings": [],
+                "filtered_files": [
+                    {"file": "archived-lock.txt", "decision": "filter", "reason": "lock-file"},
+                ],
             }
         )
     )
@@ -212,6 +216,8 @@ def test_overview_filters_findings_and_sqlite_is_read_only(
     code, _, detail = request(service, "/run?id=run-001", headers=session)
     assert code == 200
     assert "order.py:13" in detail
+    assert "<strong>0.001650</strong>" in detail
+    assert "0.0016500549999999999" not in detail
     assert "Use query parameters" in detail
     assert "&lt;script&gt;" in detail
     assert "<script>" not in detail
@@ -232,7 +238,9 @@ def test_reports_render_known_exports_and_block_path_escape(
     assert "benchmark.json" in body
     assert "unrelated.json" not in body
     assert "symlink.json" not in body
-    assert "archive" in request(service, "/report?name=stored-review.json", headers=session)[2]
+    stored = request(service, "/report?name=stored-review.json", headers=session)[2]
+    assert "archive" in stored
+    assert "archived-lock.txt" in stored
     assert "baseline" in request(service, "/report?name=eval.json", headers=session)[2]
     benchmark = request(service, "/report?name=benchmark.json", headers=session)[2]
     assert "codex" in benchmark
@@ -286,3 +294,75 @@ def test_malformed_login_and_repeated_failures_are_rejected(service: WebServer) 
         service, "/login", method="POST", form={"username": "admin", "password": LOGIN_VALUE}
     )
     assert code == 429
+
+
+def test_file_completion_distinguishes_units_and_no_findings(
+    service: WebServer, database: Path, session: dict[str, str]
+) -> None:
+    with closing(sqlite3.connect(database)) as connection:
+        connection.executescript("""
+            UPDATE review_runs SET status = 'partial-success' WHERE run_id = 'run-001';
+            INSERT INTO bundles VALUES
+                ('run-001','B002',2,'high','failed',10,0,0,0,'0','TimeoutError',NULL),
+                ('run-001','B003',3,'low','skipped',10,0,0,0,'0','SECRET_DETECTED',NULL),
+                ('run-001','B004',4,'low','skipped',10,0,0,0,'0','RUN_BLOCKED',NULL),
+                ('run-001','B005',5,'medium','partial-success',10,0,0,0,'0','PROVIDER_ERROR',NULL),
+                ('run-001','B006',6,'low','pending',10,0,0,0,'0',NULL,NULL);
+            INSERT INTO bundle_files VALUES
+                ('run-001','B001','clean.py','review',NULL),
+                ('run-001','B001','mixed.py','review',NULL),
+                ('run-001','B002','mixed.py','review',NULL),
+                ('run-001','B002','failed.py','review',NULL),
+                ('run-001','B003','blocked.py','review',NULL),
+                ('run-001','B004','skipped.py','review',NULL),
+                ('run-001','B005','light.md','lightweight','document'),
+                ('run-001','B006','pending.py','review',NULL);
+        """)
+    code, _, content = request(service, "/run?id=run-001", headers=session)
+    assert code == 200
+    completion = content.split('id="file-completion"', 1)[1].split("</section>", 1)[0]
+    rows = completion.split("<tr>")
+    expected = {
+        "clean.py": ("已完成", "1/1", "<td>0</td>"),
+        "order.py": ("已完成", "1/1", "<td>1</td>"),
+        "mixed.py": ("部分完成", "1/2", "TimeoutError"),
+        "failed.py": ("失败", "0/1", "TimeoutError"),
+        "blocked.py": ("已拦截", "SECRET_DETECTED"),
+        "skipped.py": ("已跳过", "RUN_BLOCKED"),
+        "light.md": ("轻量审查", "部分完成", "PROVIDER_ERROR"),
+        "pending.py": ("待处理", "0/1"),
+        "README.md": ("已过滤", "文档"),
+    }
+    for name, values in expected.items():
+        row = next(item for item in rows if f"<code>{name}</code>" in item)
+        assert all(value in row for value in values), (name, row)
+
+
+def test_blocked_run_explains_unrecorded_files(
+    service: WebServer, database: Path, session: dict[str, str]
+) -> None:
+    with closing(sqlite3.connect(database)) as connection, connection:
+        connection.execute("UPDATE review_runs SET status = 'blocked' WHERE run_id = 'run-001'")
+    code, _, content = request(service, "/run?id=run-001", headers=session)
+    assert code == 200
+    assert "可能有尚未记录的文件" in content
+
+
+def test_file_completion_paginates_without_changing_totals(
+    service: WebServer, database: Path, session: dict[str, str]
+) -> None:
+    with closing(sqlite3.connect(database)) as connection, connection:
+        connection.executemany(
+            "INSERT INTO filtered_files VALUES (?, ?, ?, ?)",
+            [("run-001", f"asset-{i:02d}.bin", "filter", "binary") for i in range(42)],
+        )
+    first = request(service, "/run?id=run-001", headers=session)[2]
+    last = request(service, "/run?id=run-001&file_page=999", headers=session)[2]
+    assert "已记录 44 个文件" in first
+    assert "已记录 44 个文件" in last
+    assert "<code>asset-00.bin</code>" in first
+    assert "<code>asset-00.bin</code>" not in last
+    assert "<code>asset-41.bin</code>" not in first
+    assert "<code>asset-41.bin</code>" in last
+    assert "第 1 / 2 页" in first
+    assert "第 2 / 2 页" in last

@@ -177,7 +177,9 @@ class WebHandler(BaseHTTPRequestHandler):
         elif path == "/runs":
             self._runs(params)
         elif path == "/run":
-            data = self.server.repository.detail(_first(params, "id")[:128])
+            data = self.server.repository.detail(
+                _first(params, "id")[:128], file_page=_page_number(_first(params, "file_page"))
+            )
             if data is not None:
                 self._html(200, views.run_detail(data))
             else:
@@ -200,12 +202,7 @@ class WebHandler(BaseHTTPRequestHandler):
         """検索条件を制限し、ページ外の指定を正規化する."""
         query = _first(params, "q")[:120]
         status = _first(params, "status")[:32]
-        raw_page = _first(params, "page")
-        page = (
-            max(1, int(raw_page))
-            if raw_page.isascii() and raw_page.isdecimal() and len(raw_page) <= 6
-            else 1
-        )
+        page = _page_number(_first(params, "page"))
         items, total = self.server.repository.runs(query, status, page)
         last = max(1, (total + PAGE_SIZE - 1) // PAGE_SIZE)
         if page > last:
@@ -276,3 +273,8 @@ def _session_cookie(token: str, seconds: int) -> str:
 def _first(query: dict[str, list[str]], name: str) -> str:
     """単一値として受け付ける先頭の入力を返す."""
     return next(iter(query.get(name, [])), "")
+
+
+def _page_number(value: str) -> int:
+    """桁数を制限してページ番号を解釈する."""
+    return max(1, int(value)) if value.isascii() and value.isdecimal() and len(value) <= 6 else 1

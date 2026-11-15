@@ -9,6 +9,10 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Any
 
+from self_improving_code_review.infrastructure.persistence.web_file_completion import (
+    read_file_completion,
+)
+
 Row = dict[str, Any]
 PAGE_SIZE = 20
 DETAIL_LIMIT = 200
@@ -102,7 +106,7 @@ class WebReadRepository:
             )
             return [_run(row) for row in rows], int(total.fetchone()[0])
 
-    def detail(self, run_id: str) -> Row | None:
+    def detail(self, run_id: str, *, file_page: int = 1) -> Row | None:
         """一つの実行と報告内容、単位、除外ファイル、SCM 投稿状態を取得する."""
         with self.connection() as connection:
             header = connection.execute(
@@ -134,19 +138,11 @@ class WebReadRepository:
             """,
                 run_id,
             )
-            filtered = _rows(
-                connection,
-                """
-                SELECT path, decision, reason FROM filtered_files WHERE run_id = ?
-                ORDER BY path LIMIT ?
-            """,
-                run_id,
-            )
             return {
                 **_run(header),
                 "findings": findings,
                 "bundles": bundles,
-                "filtered": filtered,
+                "file_completion": read_file_completion(connection, run_id, file_page),
                 "publications": _publications(connection, run_id),
             }
 

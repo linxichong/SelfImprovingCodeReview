@@ -170,3 +170,17 @@ tbody tr:hover { background: #f8faf5; }
   .facts { grid-template-columns: 1fr; }
   .filters input { flex-basis: 72%; }
 }
+
+.file-completion-counts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .55rem 1rem;
+  list-style: none;
+  margin: 0;
+  padding: 0 1.25rem 1rem;
+}
+.file-completion-counts li { display: inline-flex; align-items: center; gap: .45rem; }
+#file-completion td:first-child { max-width: 28rem; white-space: normal; overflow-wrap: anywhere; }
+#file-completion summary { color: var(--green); font-weight: 650; }
+.file-completion-units { display: grid; gap: .35rem; list-style: none; margin: .5rem 0 0; padding: 0; }
+.file-completion-units small { white-space: normal; overflow-wrap: anywhere; }

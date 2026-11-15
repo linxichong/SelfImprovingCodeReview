@@ -4,9 +4,16 @@ from __future__ import annotations
 
 from collections import Counter
 from datetime import UTC, datetime
+from decimal import Decimal, InvalidOperation
 from html import escape
 from urllib.parse import urlencode
 
+from self_improving_code_review.domain.common.enums import BundleStatus
+from self_improving_code_review.infrastructure.persistence.web_file_completion import (
+    FileCompletion,
+    FileCompletionPage,
+    FileCompletionStatus,
+)
 from self_improving_code_review.infrastructure.persistence.web_read_repository import (
     DETAIL_LIMIT,
     PAGE_SIZE,
@@ -31,6 +38,29 @@ SEVERITIES = {
     "low": ("低危", "green"),
     "info": ("提示", "muted"),
 }
+FILE_STATUSES = {
+    FileCompletionStatus.BLOCKED: ("已拦截", "red"),
+    FileCompletionStatus.FAILED: ("失败", "red"),
+    FileCompletionStatus.PARTIAL: ("部分完成", "amber"),
+    FileCompletionStatus.PENDING: ("待处理", "blue"),
+    FileCompletionStatus.SKIPPED: ("已跳过", "muted"),
+    FileCompletionStatus.COMPLETED: ("已完成", "green"),
+    FileCompletionStatus.FILTERED: ("已过滤", "muted"),
+}
+FILE_DECISIONS = {"review": "纳入审查", "lightweight": "轻量审查", "filter": "排除"}
+FILE_REASONS = {
+    "binary": "二进制",
+    "generated": "生成文件",
+    "lock-file": "依赖锁文件",
+    "vendor": "第三方依赖",
+    "build-output": "构建产物",
+    "minified": "压缩文件",
+    "excluded": "规则排除",
+    "document": "文档",
+    "deleted": "删除文件",
+    "no-commentable-line": "没有可评论行",
+    "budget-exceeded": "超出审查预算",
+}
 REPORT_TYPES = {"review": "审查报告", "evaluation": "评估报告", "benchmark": "基准评测"}
 NAV = (("/", "总览", "◫"), ("/runs", "审查运行", "≡"), ("/reports", "已生成报告", "▤"))
 DASH = "—"
@@ -44,6 +74,20 @@ def html(value: object) -> str:
 def fmt_number(value: object) -> str:
     """計数・使用量を桁区切り付きで表示する."""
     return f"{value:,}" if isinstance(value, int | float) else html(value)
+
+
+def _format_cost(value: object) -> str:
+    """USD の保存精度を維持しつつ、表示を小数点以下 6 桁にそろえる."""
+    try:
+        cost = Decimal(str(value))
+        if not cost.is_finite():
+            return DASH
+        unit = Decimal("0.000001")
+        if 0 < cost < unit:
+            return "<0.000001"
+        return f"{cost.quantize(unit):,.6f}"
+    except InvalidOperation:
+        return DASH
 
 
 def fmt_time(value: object) -> str:
@@ -182,6 +226,12 @@ def runs(items: list[Row], total: int, query: str, status: str, current: int) ->
 def run_detail(data: Row, active: str = "/runs", *, source: str | None = None) -> str:
     """実行または JSON レポートの詳細を表示する."""
     stats = data.get("metrics", {})
+    coverage = data.get("file_completion")
+    coverage_section = (
+        _file_completion(coverage, data["run_id"], data["status"])
+        if isinstance(coverage, FileCompletionPage)
+        else ""
+    )
     facts = (
         ("状态", _badge(data.get("status"), STATUS)),
         ("模型", html(data.get("model"))),
@@ -198,7 +248,7 @@ def run_detail(data: Row, active: str = "/runs", *, source: str | None = None) -
             ("主要发现", stats.get("main_finding_count"), None),
             ("输入 Token", stats.get("input_tokens"), None),
             ("输出 Token", stats.get("output_tokens"), None),
-            ("估算成本 (USD)", stats.get("cost_usd"), None),
+            ("估算成本 (USD)", _format_cost(stats.get("cost_usd")), None),
         )
     )
     return page(
@@ -209,6 +259,7 @@ def run_detail(data: Row, active: str = "/runs", *, source: str | None = None) -
             + cards
             + '<section class="panel"><header><h2>运行信息</h2></header>'
             f'<dl class="facts">{details}</dl></section>'
+            + coverage_section
             + _findings(data.get("findings", []))
             + _section(
                 "审查单元",
@@ -252,6 +303,81 @@ def run_detail(data: Row, active: str = "/runs", *, source: str | None = None) -
             )
         ),
         active,
+    )
+
+
+def _file_completion(coverage: FileCompletionPage, run_id: str, run_status: str) -> str:
+    """ファイル単位の完了状況と、該当する根拠を表示する."""
+    total = sum(coverage.counts.values())
+    insight = (
+        "运行中或被拦截时可能有尚未记录的文件。"
+        if run_status in {"pending", "running", "blocked"}
+        else ""
+    )
+    counts = "".join(
+        f'<li><span class="badge {tone}">{label}</span>'
+        f"<strong>{coverage.counts[state]}</strong></li>"
+        for state, (label, tone) in FILE_STATUSES.items()
+        if coverage.counts.get(state)
+    )
+    rows = [_file_completion_row(entry) for entry in coverage.files]
+    table = _table(
+        ("文件", "选入方式 / 原因", "完成情况", "审查单元", "主要发现"),
+        rows,
+        "此运行没有保存文件级记录。",
+    )
+    pagination = _file_completion_pagination(coverage, run_id) if coverage.last > 1 else ""
+    return (
+        '<section class="panel" id="file-completion"><header><h2>文件级审查完成情况</h2>'
+        f"<p>已记录 {total:,} 个文件。完成状态按各文件所属的审查单元计算。{insight}</p></header>"
+        f'<ul class="file-completion-counts">{counts}</ul>{table}{pagination}</section>'
+    )
+
+
+def _file_completion_row(entry: FileCompletion) -> list[str]:
+    """一つのファイルと、そのレビュー単位ごとの保存結果を整形する."""
+    label, tone = FILE_STATUSES[entry.status]
+    decision = html(FILE_DECISIONS.get(entry.decision, entry.decision))
+    if entry.reason:
+        decision += f"<small>{html(FILE_REASONS.get(entry.reason, entry.reason))}</small>"
+    successful = sum(unit.status is BundleStatus.SUCCESS for unit in entry.units)
+    details = "".join(
+        f"<li><code>{html(unit.bundle_id)}</code> {_badge(unit.status.value, STATUS)}"
+        + (f"<small>{html(unit.error_code)}</small>" if unit.error_code else "")
+        + "</li>"
+        for unit in entry.units
+    )
+    units = (
+        f"<details><summary>{successful}/{len(entry.units)} 个单元完成</summary>"
+        f'<ul class="file-completion-units">{details}</ul></details>'
+        if entry.units
+        else DASH
+    )
+    findings = (
+        fmt_number(entry.finding_count)
+        if entry.status in {FileCompletionStatus.COMPLETED, FileCompletionStatus.PARTIAL}
+        else DASH
+    )
+    return [
+        f"<code>{html(entry.path)}</code>",
+        decision,
+        f'<span class="badge {tone}">{label}</span>',
+        units,
+        findings,
+    ]
+
+
+def _file_completion_pagination(coverage: FileCompletionPage, run_id: str) -> str:
+    """現在の実行を維持してファイル一覧だけをページ送りする."""
+    links = "".join(
+        '<a class="outline" href="/run?'
+        f'{html(urlencode({"id": run_id, "file_page": number}))}#file-completion">{text}</a>'
+        for number, text in ((coverage.current - 1, "上一页"), (coverage.current + 1, "下一页"))
+        if 1 <= number <= coverage.last
+    )
+    return (
+        '<footer class="pagination">'
+        f"<span>第 {coverage.current} / {coverage.last} 页</span><div>{links}</div></footer>"
     )
 
 
@@ -303,7 +429,10 @@ def report_detail(name: str, report: Row) -> str:
                     for item in _data_rows(data.get("reference_findings", []))
                 ],
                 "errors": _data_rows(data.get("errors", [])),
-                "filtered": _data_rows(data.get("filtered_files", [])),
+                "filtered": [
+                    {**item, "path": item.get("file", item.get("path"))}
+                    for item in _data_rows(data.get("filtered_files", []))
+                ],
             },
             "/reports",
             source=name,
