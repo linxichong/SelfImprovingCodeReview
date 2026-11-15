@@ -10,7 +10,7 @@ llm:
   timeout_seconds: 60
   max_retries: 2
 
-# M3 は外部送信範囲と呼出回数が増えるため、明示的に有効化する。
+# M3 会扩大外发范围并增加调用次数，需要显式启用。
 review:
   context_tools_enabled: false
   reflection_enabled: false

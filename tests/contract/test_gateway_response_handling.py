@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from decimal import Decimal
 from typing import ClassVar
 
@@ -105,7 +106,9 @@ def test_configured_model_is_used_when_the_response_omits_it() -> None:
     ],
 )
 def test_missing_message_content_is_rejected(document: dict[str, object]) -> None:
-    with pytest.raises(InvalidLlmOutputError, match="メッセージ本文がありません"):
+    with pytest.raises(
+        InvalidLlmOutputError, match=re.escape(Messages.LITELLM_RESPONSE_CONTENT_MISSING)
+    ):
         _client(lambda **_kwargs: document).generate_structured(_request())
 
 
@@ -113,7 +116,9 @@ def test_missing_message_content_is_rejected(document: dict[str, object]) -> Non
 def test_non_string_message_content_is_rejected() -> None:
     document = {"choices": [{"message": {"content": {"findings": []}}}], "usage": {}}
 
-    with pytest.raises(InvalidLlmOutputError, match="JSON 文字列"):
+    with pytest.raises(
+        InvalidLlmOutputError, match=re.escape(Messages.LITELLM_RESPONSE_CONTENT_NOT_JSON_STRING)
+    ):
         _client(lambda **_kwargs: document).generate_structured(_request())
 
 
@@ -131,7 +136,9 @@ def test_non_string_message_content_is_rejected() -> None:
 def test_content_without_exactly_one_json_object_is_rejected(content: str) -> None:
     document = {"choices": [{"message": {"content": content}}], "usage": {}}
 
-    with pytest.raises(InvalidLlmOutputError, match="JSON オブジェクトがありません"):
+    with pytest.raises(
+        InvalidLlmOutputError, match=re.escape(Messages.LITELLM_RESPONSE_JSON_OBJECT_MISSING)
+    ):
         _client(lambda **_kwargs: document).generate_structured(_request())
 
 
@@ -147,7 +154,9 @@ def test_trailing_json_object_is_selected_when_it_is_the_only_complete_one() -> 
 
 @pytest.mark.case("CT-M3-006")
 def test_non_object_response_is_rejected() -> None:
-    with pytest.raises(InvalidLlmOutputError, match="オブジェクトである必要があります"):
+    with pytest.raises(
+        InvalidLlmOutputError, match=re.escape(Messages.LITELLM_RESPONSE_NOT_OBJECT)
+    ):
         _client(lambda **_kwargs: "not-a-response").generate_structured(_request())
 
 
@@ -172,7 +181,9 @@ def test_model_dump_returning_a_non_mapping_is_rejected() -> None:
         def model_dump(self) -> str:
             return "not-a-mapping"
 
-    with pytest.raises(InvalidLlmOutputError, match="オブジェクトである必要があります"):
+    with pytest.raises(
+        InvalidLlmOutputError, match=re.escape(Messages.LITELLM_RESPONSE_NOT_OBJECT)
+    ):
         _client(lambda **_kwargs: BadResponse()).generate_structured(_request())
 
 

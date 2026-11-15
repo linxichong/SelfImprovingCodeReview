@@ -41,7 +41,7 @@ def test_dataset_client_rejects_invalid_document(tmp_path: Path) -> None:
     dataset = tmp_path / "invalid.json"
     dataset.write_text('{"schema_version": 1}', encoding="utf-8")
 
-    with pytest.raises(InvalidInputError, match="LLM データセット"):
+    with pytest.raises(InvalidInputError, match="无法读取 LLM 数据集"):
         DatasetLlmClient(dataset)
 
 

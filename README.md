@@ -92,7 +92,7 @@ uv run --frozen review governance project bind-repository \
   --provider github \
   --external-repository owner/repository \
   --actor tanaka \
-  --reason "対象リポジトリの関連付け"
+  --reason "绑定目标仓库"
 ```
 
 如果现有数据库包含尚未设置归属的正确答案数据集或 SCM 变更请求，使用 `adopt-existing` 逐项关联到项目，
@@ -126,7 +126,7 @@ uv run --frozen review governance backup verify \
 uv run --frozen review memory archive <MEMORY_ID> \
   --repository . --config config/m5.governance.example.yaml \
   --project example-project --lock-version 1 \
-  --actor tanaka --reason "根拠の有効期限切れ"
+  --actor tanaka --reason "依据已过期"
 
 uv run --frozen review memory conflict list \
   --repository . --config config/m5.governance.example.yaml \
@@ -270,10 +270,10 @@ scm:
 回复已发布的行评论时，必须完全匹配以下任意一种格式。
 
 ```text
-/review-feedback true-positive --reason "妥当と判断した理由"
-/review-feedback false-positive --reason "誤検出と判断した理由"
-/review-feedback needs-more-evidence --reason "追加根拠が必要な理由"
-/review-feedback not-applicable --reason "対象外と判断した理由"
+/review-feedback true-positive --reason "判定为有效的理由"
+/review-feedback false-positive --reason "判定为误报的理由"
+/review-feedback needs-more-evidence --reason "需要补充依据的理由"
+/review-feedback not-applicable --reason "判定为不适用的理由"
 ```
 
 随后执行以下命令。
@@ -322,7 +322,7 @@ M4_GITHUB_ALLOW_PUBLISH=YES bash scripts/m4_github_smoke.sh \
 在 `feedback_actor_mapping` 中登记该用户。
 
 ```text
-/review-feedback true-positive --reason "指摘内容が妥当であることを確認しました"
+/review-feedback true-positive --reason "已确认审查发现有效"
 ```
 
 同步后确认 `processed_count` 为 1、`failed_count` 为 0。
@@ -356,7 +356,7 @@ SCM HTTP 响应最多读取 `scm.max_response_bytes`（默认 8 MiB）。声明�
 基本格式如下。必须从四种差异输入中选择且仅选择一种。
 
 ```bash
-uv run --frozen review review [共通オプション] <差分入力元>
+uv run --frozen review review [通用选项] <差异来源>
 ```
 
 ### 通用选项
@@ -469,7 +469,7 @@ uv run --frozen review feedback finding \
   --run <RUN_ID> \
   --finding B001-F001 \
   --label false-positive \
-  --reason "この呼び出し元では事前条件を検証済みです。" \
+  --reason "该调用方已经验证了前置条件。" \
   --actor reviewer-1
 ```
 
@@ -486,8 +486,8 @@ uv run --frozen review feedback missed-issue \
   --start-line 12 \
   --issue-type null-dereference \
   --severity high \
-  --description "None の可能性がある値を参照しています。" \
-  --evidence "12 行目で検証せずに属性を参照しています。" \
+  --description "引用的值可能为 None。" \
+  --evidence "第 12 行未检查该值就访问了属性。" \
   --actor reviewer-1
 ```
 
@@ -513,12 +513,12 @@ memory:
 ```bash
 uv run --frozen review memory list \
   --repository . \
-  --config <保守担当者を設定したファイル> \
+  --config <包含维护人员设置的配置文件> \
   --status pending
 
 uv run --frozen review memory show <MEMORY_ID> \
   --repository . \
-  --config <保守担当者を設定したファイル>
+  --config <包含维护人员设置的配置文件>
 ```
 
 指定列表中的 `lock_version` 执行批准或驳回。同一候选如果已被更新，乐观锁会拒绝操作。
@@ -526,16 +526,16 @@ uv run --frozen review memory show <MEMORY_ID> \
 ```bash
 uv run --frozen review memory approve <MEMORY_ID> \
   --repository . \
-  --config <保守担当者を設定したファイル> \
+  --config <包含维护人员设置的配置文件> \
   --actor reviewer-1 \
-  --reason "複数のレビューで再利用できるため承認します。" \
+  --reason "批准此记忆，因为它可在多次审查中复用。" \
   --lock-version 0
 
 uv run --frozen review memory reject <MEMORY_ID> \
   --repository . \
-  --config <保守担当者を設定したファイル> \
+  --config <包含维护人员设置的配置文件> \
   --actor reviewer-1 \
-  --reason "個別案件に限定された内容です。" \
+  --reason "这条记忆仅适用于个别案例。" \
   --lock-version 0
 ```
 
@@ -559,7 +559,7 @@ memory:
 ```bash
 uv run --frozen review review \
   --repository . \
-  --config <メモリを有効化した設定ファイル> \
+  --config <启用记忆的配置文件> \
   --git-diff
 ```
 
@@ -602,7 +602,7 @@ uv run --frozen review eval \
   --config review.yaml \
   --arms A,B,C \
   --split development \
-  --set-version <発行済みデータ集合のバージョン> \
+  --set-version <已发布数据集版本> \
   --repeat 3
 ```
 
@@ -652,7 +652,7 @@ uv run --frozen review adjudication resolve \
   --result true-positive \
   --issue-id test-v1-I001 \
   --actor reviewer-1 \
-  --reason "同じ根本原因と根拠位置に一致します。"
+  --reason "根因和依据位置一致。"
 ~~~
 
 全部裁决后，使用已保存的匹配结果重新计算指标，以 JSON 显示 B/C 比较组的每次重复和最终判定。

@@ -391,7 +391,7 @@ def _reject_embedded_secret(document: dict[str, Any]) -> None:
         if forbidden:
             message = (
                 f"{Messages.CONFIG_CREDENTIALS_EMBEDDED}: {sorted(forbidden)}。"
-                f"代わりに {environment_name} を設定してください。"
+                f"{Messages.CONFIG_CREDENTIALS_ENV_HINT.format(name=environment_name)}"
             )
             raise InvalidInputError(message)
 

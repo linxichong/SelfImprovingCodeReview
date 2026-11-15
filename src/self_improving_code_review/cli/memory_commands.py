@@ -443,5 +443,7 @@ def _database_path(repository: Path, config: AppConfig) -> Path:
         configured.resolve() if configured.is_absolute() else (repository / configured).resolve()
     )
     if not candidate.is_relative_to(repository):
-        raise InvalidInputError(Messages.configured_path_outside_repository("データベースのパス"))
+        raise InvalidInputError(
+            Messages.configured_path_outside_repository(Messages.DATABASE_PATH_LABEL)
+        )
     return candidate

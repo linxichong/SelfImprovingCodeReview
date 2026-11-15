@@ -12,6 +12,7 @@ from self_improving_code_review.domain.scm.models import (
     PublicationKind,
     ScmChange,
 )
+from self_improving_code_review.messages import Messages
 
 _SUMMARY_FINGERPRINT = "scm-review-summary"
 
@@ -73,9 +74,12 @@ def _summary_plan(
     publication_id = _publication_id(change, PublicationKind.SUMMARY, fingerprint_hash)
     if findings:
         sections = "\n\n".join(_summary_finding(finding) for finding in findings)
-        body = f"## AI コードレビュー概要\n\n行コメント以外の指摘: {len(findings)} 件\n\n{sections}"
+        body = (
+            f"## {Messages.SCM_SUMMARY_TITLE}\n\n"
+            f"{Messages.SCM_SUMMARY_COUNT_LABEL}: {len(findings)} 条\n\n{sections}"
+        )
     else:
-        body = "## AI コードレビュー概要\n\n検証済みの指摘はありません。"
+        body = f"## {Messages.SCM_SUMMARY_TITLE}\n\n{Messages.SCM_NO_FINDINGS}"
     body = f"{body}\n\n{_marker(publication_id, change.head_sha)}"
     request = CreateComment(kind=PublicationKind.SUMMARY, body=body)
     return PublicationPlan(
@@ -89,14 +93,14 @@ def _summary_plan(
 
 
 def _finding_body(finding: Finding, publication_id: str, head_sha: str) -> str:
-    """行コメント用の日本語本文と追跡マーカーを返す."""
+    """行コメント用の本文と追跡マーカーを返す."""
     candidate = finding.candidate
     return (
         f"**{candidate.severity.value.upper()}: {candidate.title}**\n\n"
-        f"説明: {candidate.description}\n\n"
-        f"根拠理由: {candidate.evidence.reason}\n\n"
-        f"提案: {candidate.suggestion}\n\n"
-        f"ルール ID: {candidate.rule_id}\n\n"
+        f"{Messages.SCM_FINDING_DESCRIPTION_LABEL}: {candidate.description}\n\n"
+        f"{Messages.SCM_FINDING_EVIDENCE_LABEL}: {candidate.evidence.reason}\n\n"
+        f"{Messages.SCM_FINDING_SUGGESTION_LABEL}: {candidate.suggestion}\n\n"
+        f"{Messages.SCM_FINDING_RULE_LABEL}: {candidate.rule_id}\n\n"
         f"{_marker(publication_id, head_sha)}"
     )
 
@@ -108,10 +112,10 @@ def _summary_finding(finding: Finding) -> str:
         f"- **{candidate.severity.value.upper()}** "
         f"`{candidate.file.value}:{candidate.line_range.start_line}` "
         f"{candidate.title}\n"
-        f"  - 説明: {candidate.description}\n"
-        f"  - 根拠理由: {candidate.evidence.reason}\n"
-        f"  - 提案: {candidate.suggestion}\n"
-        f"  - ルール ID: {candidate.rule_id}"
+        f"  - {Messages.SCM_FINDING_DESCRIPTION_LABEL}: {candidate.description}\n"
+        f"  - {Messages.SCM_FINDING_EVIDENCE_LABEL}: {candidate.evidence.reason}\n"
+        f"  - {Messages.SCM_FINDING_SUGGESTION_LABEL}: {candidate.suggestion}\n"
+        f"  - {Messages.SCM_FINDING_RULE_LABEL}: {candidate.rule_id}"
     )
 
 

@@ -59,7 +59,7 @@ def test_multiturn_case_rejects_invalid_request_label(tmp_path: Path) -> None:
     )
     client = DatasetLlmClient(dataset)
 
-    with pytest.raises(InvalidInputError, match="要求ラベル"):
+    with pytest.raises(InvalidInputError, match="多轮请求标签无效"):
         client.generate_structured(request)
 
 
@@ -72,7 +72,7 @@ def test_multiturn_case_rejects_missing_response(tmp_path: Path) -> None:
     )
     client = DatasetLlmClient(dataset)
 
-    with pytest.raises(InvalidInputError, match="一致する複数ターン応答"):
+    with pytest.raises(InvalidInputError, match="缺少与请求匹配的多轮响应"):
         client.generate_structured(request)
 
 
@@ -84,7 +84,7 @@ def test_multiturn_case_rejects_request_hash_mismatch(tmp_path: Path) -> None:
     dataset = _write_dataset(tmp_path, [response])
     client = DatasetLlmClient(dataset)
 
-    with pytest.raises(InvalidInputError, match="要求ハッシュ"):
+    with pytest.raises(InvalidInputError, match="请求哈希不一致"):
         client.generate_structured(request)
 
 
@@ -102,7 +102,7 @@ def test_multiturn_case_detects_unused_response_on_close(tmp_path: Path) -> None
     client = DatasetLlmClient(dataset)
     client.generate_structured(first)
 
-    with pytest.raises(InvalidInputError, match="未使用応答"):
+    with pytest.raises(InvalidInputError, match="未使用的响应"):
         client.close()
 
     client.close()
@@ -114,7 +114,7 @@ def test_multiturn_case_rejects_duplicate_response_key(tmp_path: Path) -> None:
     response = _response(request, "B001", "review-agent", 1, "x")
     dataset = _write_dataset(tmp_path, [response, response])
 
-    with pytest.raises(InvalidInputError, match="応答キーが重複"):
+    with pytest.raises(InvalidInputError, match="多轮响应键重复"):
         DatasetLlmClient(dataset)
 
 
@@ -128,7 +128,7 @@ def test_multiturn_client_rejects_request_after_close(tmp_path: Path) -> None:
     client = DatasetLlmClient(dataset)
     client.close()
 
-    with pytest.raises(InvalidInputError, match="終了済み"):
+    with pytest.raises(InvalidInputError, match="LLM 数据集已关闭"):
         client.generate_structured(request)
 
 

@@ -60,7 +60,7 @@ class RuleLoader:
             if previous_path is not None:
                 message = (
                     f"{Messages.RULE_ID_DUPLICATED}: {rule.id}: {relative_path}: "
-                    f"定義済み {previous_path}"
+                    f"{Messages.RULE_PREVIOUS_DEFINITION_LABEL} {previous_path}"
                 )
                 raise InvalidInputError(message)
             seen_ids[rule.id] = relative_path

@@ -118,7 +118,9 @@ def run_configured_review(
     execution_nonce: str | None = None,
 ) -> ReviewResult:
     """構成済み依存関係でレビューを実行し、完全な結果を返す."""
-    database_path = _within_repository(repository, config.database.path, "データベースのパス")
+    database_path = _within_repository(
+        repository, config.database.path, Messages.DATABASE_PATH_LABEL
+    )
     prompts_root = repository / "prompts"
     _validate_project_context(repository, config, database_path)
     specialist_template = (
@@ -307,7 +309,7 @@ def _build_llm_client(
         dataset_path = _within_repository(
             repository,
             config.llm.dataset_path,
-            "LLM データセットのパス",
+            Messages.LLM_DATASET_PATH_LABEL,
         )
         return DatasetLlmClient(dataset_path)
 

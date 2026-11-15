@@ -137,17 +137,17 @@ def render_report(
 
 def main() -> int:
     """全 ID の対応と保存済み対応表を検証し、明示指定時だけ表を更新する."""
-    parser = argparse.ArgumentParser(description="設計ケースとテスト関数の対応を検証します。")
-    parser.add_argument("--write", action="store_true", help="対応表を再生成します。")
+    parser = argparse.ArgumentParser(description="检查设计用例与测试函数的对应关系。")
+    parser.add_argument("--write", action="store_true", help="重新生成对应表。")
     arguments = parser.parse_args()
     designed = design_case_ids()
     marked = marked_case_ids()
     unknown = sorted(set(marked) - set(designed))
     missing = sorted(set(designed) - set(marked))
     sys.stdout.write(
-        f"設計ケース: {len(designed)}, 関連付け済み: {len(set(designed) & set(marked))}" + chr(10)
+        f"设计用例: {len(designed)}, 已关联: {len(set(designed) & set(marked))}" + chr(10)
     )
-    for label, items in (("未定義 ID", unknown), ("関連テストのない ID", missing)):
+    for label, items in (("未定义 ID", unknown), ("缺少关联测试的 ID", missing)):
         if items:
             joined = ", ".join(items)
             sys.stdout.write(f"{label}: {joined}" + chr(10))
@@ -157,9 +157,7 @@ def main() -> int:
     if arguments.write:
         REPORT.write_text(report, encoding="utf-8")
     elif not REPORT.exists() or REPORT.read_text(encoding="utf-8") != report:
-        sys.stdout.write(
-            "対応表が未生成または古くなっています。--write で再生成してください。" + chr(10)
-        )
+        sys.stdout.write("对应表缺失或已过期。请使用 --write 重新生成。" + chr(10))
         return 1
     return 0
 

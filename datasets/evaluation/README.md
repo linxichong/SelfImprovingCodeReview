@@ -67,7 +67,7 @@ uv run --frozen review ground-truth publish \
   --repository .review/formal-evaluation-repository \
   --config .review/formal-evaluation-repository/evaluation.yaml \
   --input datasets/evaluation/ground-truth-test-v2.json \
-  --actor '<保守担当者ID>'
+  --actor '<维护人员 ID>'
 ~~~
 
 目标已存在时工具不会覆盖。重新生成前先确认如何保留既有评估结果，再指定不同的 `--repository`，或移走现有目录。

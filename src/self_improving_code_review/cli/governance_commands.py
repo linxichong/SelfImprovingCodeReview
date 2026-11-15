@@ -188,7 +188,7 @@ def _backup_database_path(repository: Path, raw_path: str) -> Path:
     )
     if not candidate.is_relative_to(repository):
         raise InvalidInputError(
-            Messages.configured_path_outside_repository("バックアップデータベースのパス")
+            Messages.configured_path_outside_repository(Messages.BACKUP_DATABASE_PATH_LABEL)
         )
     if not candidate.is_file():
         raise InvalidInputError(Messages.BACKUP_DATABASE_NOT_FOUND)
@@ -202,5 +202,7 @@ def _database_path(repository: Path, config: AppConfig) -> Path:
         configured.resolve() if configured.is_absolute() else (repository / configured).resolve()
     )
     if not candidate.is_relative_to(repository):
-        raise InvalidInputError(Messages.configured_path_outside_repository("データベースのパス"))
+        raise InvalidInputError(
+            Messages.configured_path_outside_repository(Messages.DATABASE_PATH_LABEL)
+        )
     return candidate

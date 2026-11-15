@@ -120,7 +120,7 @@ def test_rule_diagnostics_rejects_unknown_target_and_outside_rules_path(
     )
     assert selected.files[0].path.value == "src/app.py"
 
-    with pytest.raises(InvalidInputError, match="対象ファイルが見つかりません"):
+    with pytest.raises(InvalidInputError, match="找不到目标文件"):
         use_case.execute(tmp_path, source, NormalizedPath("src/missing.py"))
 
     outside = config.model_copy(

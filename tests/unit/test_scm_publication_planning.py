@@ -84,10 +84,10 @@ def test_planner_uses_stable_severity_order_and_moves_overflow_to_summary() -> N
     assert plans[0].finding_id == "B001-F002"
     assert plans[0].request.position is not None
     assert plans[0].request.position.path == NormalizedPath("src/a.py")
-    assert "説明: 説明 2" in plans[0].request.body
-    assert "根拠理由: 根拠" in plans[0].request.body
-    assert "提案: 修正 2" in plans[0].request.body
-    assert "ルール ID: GENERAL.TEST" in plans[0].request.body
+    assert "说明: 説明 2" in plans[0].request.body
+    assert "依据: 根拠" in plans[0].request.body
+    assert "建议: 修正 2" in plans[0].request.body
+    assert "规则 ID: GENERAL.TEST" in plans[0].request.body
     assert len(plans[0].publication_id) == 64
     assert (
         f"<!-- self-reviewer:publication={plans[0].publication_id};head={_HEAD_SHA} -->"
@@ -95,8 +95,8 @@ def test_planner_uses_stable_severity_order_and_moves_overflow_to_summary() -> N
     )
     assert "src/z.py:30" in plans[1].request.body
     assert "src/ref.py:20" in plans[1].request.body
-    assert "根拠理由: 根拠" in plans[1].request.body
-    assert "ルール ID: GENERAL.TEST" in plans[1].request.body
+    assert "依据: 根拠" in plans[1].request.body
+    assert "规则 ID: GENERAL.TEST" in plans[1].request.body
     assert all(plan.run_id == str(_RUN_ID) for plan in plans)
     assert all(len(plan.request_hash) == 64 for plan in plans)
 
@@ -108,7 +108,7 @@ def test_planner_creates_summary_when_review_has_no_findings() -> None:
     assert len(plans) == 1
     assert plans[0].kind is PublicationKind.SUMMARY
     assert plans[0].finding_id is None
-    assert "指摘はありません" in plans[0].request.body
+    assert "没有通过验证的审查发现" in plans[0].request.body
     assert (
         f"<!-- self-reviewer:publication={plans[0].publication_id};head={_HEAD_SHA} -->"
         in plans[0].request.body
@@ -123,7 +123,7 @@ def test_planner_omits_summary_when_all_findings_are_inline() -> None:
 
     assert len(plans) == 1
     assert plans[0].kind is PublicationKind.INLINE
-    assert "提案:" in plans[0].request.body
+    assert "建议:" in plans[0].request.body
 
 
 @pytest.mark.case("UT-M4-001")

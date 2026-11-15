@@ -80,7 +80,7 @@ def test_relative_configured_path_resolves_inside_the_repository(tmp_path: Path)
     repository = tmp_path / "repository"
     repository.mkdir()
 
-    resolved = _within_repository(repository, Path(".review/review.db"), "データベースのパス")
+    resolved = _within_repository(repository, Path(".review/review.db"), "数据库路径")
 
     assert resolved == repository / ".review/review.db"
 
@@ -90,7 +90,7 @@ def test_absolute_configured_path_inside_the_repository_is_accepted(tmp_path: Pa
     repository.mkdir()
     absolute = repository / "data" / "review.db"
 
-    assert _within_repository(repository, absolute, "データベースのパス") == absolute
+    assert _within_repository(repository, absolute, "数据库路径") == absolute
 
 
 @pytest.mark.parametrize(
@@ -104,8 +104,8 @@ def test_configured_path_outside_the_repository_is_rejected(
     repository = tmp_path / "repository"
     repository.mkdir()
 
-    with pytest.raises(InvalidInputError, match="リポジトリ内を指定してください"):
-        _within_repository(repository, configured, "データベースのパス")
+    with pytest.raises(InvalidInputError, match="必须位于仓库内"):
+        _within_repository(repository, configured, "数据库路径")
 
 
 def test_dataset_provider_requires_a_dataset_path() -> None:
@@ -129,7 +129,7 @@ def test_dataset_path_outside_the_repository_is_rejected(tmp_path: Path) -> None
         llm=LlmConfig(provider="dataset", dataset_path=Path("../outside/cases.json"))
     )
 
-    with pytest.raises(InvalidInputError, match="リポジトリ内を指定してください"):
+    with pytest.raises(InvalidInputError, match="必须位于仓库内"):
         _build_llm_client(config, tmp_path)
 
 
@@ -255,7 +255,7 @@ def test_governance_database_path_outside_repository_is_rejected(tmp_path: Path)
     repository.mkdir()
     config = AppConfig(database=DatabaseConfig(path=Path("../outside.db")))
 
-    with pytest.raises(InvalidInputError, match="リポジトリ内を指定してください"):
+    with pytest.raises(InvalidInputError, match="必须位于仓库内"):
         _database_path(repository, config)
 
 

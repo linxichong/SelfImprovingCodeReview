@@ -14,7 +14,7 @@ def test_duplicate_case_ids_are_rejected(tmp_path: Path) -> None:
     dataset = tmp_path / "duplicate.json"
     dataset.write_text(json.dumps(_document(duplicate=True)), encoding="utf-8")
 
-    with pytest.raises(InvalidInputError, match="case_id が重複"):
+    with pytest.raises(InvalidInputError, match="LLM 数据集的 case_id 重复"):
         DatasetLlmClient(dataset)
 
 
@@ -22,12 +22,12 @@ def test_unreadable_dataset_is_rejected(tmp_path: Path) -> None:
     dataset = tmp_path / "binary.json"
     dataset.write_bytes(b"\xff\xfe\x00")
 
-    with pytest.raises(InvalidInputError, match="LLM データセット"):
+    with pytest.raises(InvalidInputError, match="无法读取 LLM 数据集"):
         DatasetLlmClient(dataset)
 
 
 def test_missing_dataset_is_rejected(tmp_path: Path) -> None:
-    with pytest.raises(InvalidInputError, match="LLM データセット"):
+    with pytest.raises(InvalidInputError, match="无法读取 LLM 数据集"):
         DatasetLlmClient(tmp_path / "missing.json")
 
 

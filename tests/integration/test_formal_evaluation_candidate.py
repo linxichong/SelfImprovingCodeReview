@@ -113,7 +113,7 @@ def test_formal_candidate_has_required_population_and_resolvable_locations(
         assert source.splitlines()[issue["start_line"] - 1].strip()
 
     parsed = ground_truth_commands._GroundTruthDocument.model_validate(document)
-    with pytest.raises(InvalidInputError, match="検証者"):
+    with pytest.raises(InvalidInputError, match=re.escape(Messages.INVALID_GROUND_TRUTH_APPROVAL)):
         ground_truth_commands._validate_document(parsed)
 
     repeated = subprocess.run(
@@ -189,5 +189,5 @@ def test_v3_candidate_includes_clean_cases_and_uses_schema_version_two(
         assert source.splitlines()[issue["start_line"] - 1].strip()
 
     parsed = ground_truth_commands._GroundTruthDocument.model_validate(document)
-    with pytest.raises(InvalidInputError, match="検証者"):
+    with pytest.raises(InvalidInputError, match=re.escape(Messages.INVALID_GROUND_TRUTH_APPROVAL)):
         ground_truth_commands._validate_document(parsed)

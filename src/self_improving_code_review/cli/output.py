@@ -142,7 +142,10 @@ def write_document(document: dict[str, Any], output_path: Path | None) -> None:
 
 def write_error(code: str, message: str) -> None:
     """安定した形式のエラーオブジェクトを標準エラー出力へ書き込む."""
-    print(json.dumps({"error": {"code": code, "message": message}}), file=sys.stderr)
+    print(
+        json.dumps({"error": {"code": code, "message": message}}, ensure_ascii=False),
+        file=sys.stderr,
+    )
 
 
 def _finding_document(finding: Finding) -> dict[str, Any]:

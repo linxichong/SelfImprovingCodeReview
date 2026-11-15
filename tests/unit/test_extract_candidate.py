@@ -347,7 +347,9 @@ def test_test_evaluation_feedback_is_rejected_before_loading_or_llm() -> None:
     llm = FakeLlm()
     request = replace(_request(), is_test_evaluation=True)
 
-    with pytest.raises(InvalidInputError, match="Test 正解データ"):
+    with pytest.raises(
+        InvalidInputError, match=re.escape(Messages.MEMORY_EXTRACTION_TEST_DATA_FORBIDDEN)
+    ):
         _use_case(repository, llm=llm).execute(request)
 
     assert repository.created == []

@@ -72,7 +72,7 @@ def git_value(*arguments: str) -> str:
 
 def main() -> int:
     """指定された門禁を実行し、機密本文を含まない結果を保存する."""
-    parser = argparse.ArgumentParser(description="開発標準の品質門禁を実行します。")
+    parser = argparse.ArgumentParser(description="运行开发标准规定的质量门禁。")
     parser.add_argument("--mode", choices=("local", "full"), default="local")
     parser.add_argument("--check", choices=tuple(commands(None)))
     parser.add_argument("--base-sha")

@@ -1,5 +1,5 @@
-# GitHub Pull Request を既存 M3 パイプラインでレビューする安全な設定例。
-# REVIEW_SCM_TOKEN は環境変数だけで設定し、このファイルへ記載しない。
+# 使用现有 M3 流程审查 GitHub Pull Request 的配置示例。
+# 仅从环境变量读取 REVIEW_SCM_TOKEN，禁止将令牌写入此文件。
 schema_version: 1
 project_id: github-review-example
 
@@ -17,27 +17,27 @@ review:
   max_workers: 2
 
 security:
-  # dataset 使用時は外部 LLM 送信を許可しない。
+  # 使用 dataset 时，禁止向外部 LLM 发送数据。
   allow_external_source: false
 
 scm:
-  # 実行前に true へ変更し、下の二つの識別子も実値へ変更する。
+  # 运行前将此项改为 true，并将下方两个标识符替换为实际值。
   enabled: false
   provider: github
   repository_external_id: owner/repository
   api_base_url: https://api.github.com
-  # 既定はドライラン。true だけでは投稿せず、CLI の --publish も必要。
+  # 默认试运行。发帖还需在 CLI 中指定 --publish。
   publish_enabled: false
   feedback_sync_enabled: false
   include_drafts: false
   bot_actor_external_id: self-reviewer-bot
-  # 同期を有効にする場合、GitHub ログイン名を内部担当者 ID へ明示対応する。
+  # 启用同步时，显式将 GitHub 用户名映射到内部人员 ID。
   # 例: feedback_actor_mapping: {github-reviewer: reviewer-1}
   feedback_actor_mapping: {}
   allowed_api_hosts:
     - api.github.com
   max_inline_comments: 20
   request_timeout_seconds: 30
-  # GitHub 応答は Content-Length と上限付き読出しの両方で 8 MiB に制限する。
+  # GitHub 响应同时通过 Content-Length 检查及有界读取限制为 8 MiB。
   max_response_bytes: 8388608
   max_retries: 2

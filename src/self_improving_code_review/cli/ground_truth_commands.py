@@ -89,7 +89,7 @@ def execute_ground_truth_command(arguments: Namespace) -> int:
     input_path = _within_repository(
         repository,
         Path(arguments.input),
-        "正解データ入力ファイル",
+        Messages.GROUND_TRUTH_INPUT_LABEL,
     )
     document = _load_document(input_path)
     _validate_document(document)
@@ -113,7 +113,9 @@ def execute_ground_truth_command(arguments: Namespace) -> int:
         ),
         actor_id=arguments.actor,
     )
-    database_path = _within_repository(repository, config.database.path, "データベースのパス")
+    database_path = _within_repository(
+        repository, config.database.path, Messages.DATABASE_PATH_LABEL
+    )
     SqliteUnitOfWorkFactory(database_path)
     _validate_project_context(repository, config, database_path)
     project_id = ProjectId(config.project_id) if config.governance.enabled else None

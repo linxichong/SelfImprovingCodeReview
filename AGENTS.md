@@ -116,7 +116,7 @@ security -> application
 - 检出敏感信息时，整个运行必须进入 `BLOCKED`。
 - 禁止在日志、数据库或异常中保存 API 密钥、令牌、检出字符串、完整代码或差异或提示词，以及原始响应。
 - 提示词是 `prompts/` 下的版本化资源。修改时更新版本和评估。
-- 用户可见的固定文案统一以日文维护在 `messages.py`。
+- 用户可见的固定文案统一以简体中文维护在 `messages.py`。
 - 异常消息也必须引用 `Messages`，动态值采用「固定部分常量: 动态部分」格式。测试使用
   `match=re.escape(Messages.X)` 匹配。仅内部不变量的 `AssertionError` 允许使用英文。
 - 时间用 UTC，成本用 `Decimal`，路径用规范化的 POSIX 相对路径。

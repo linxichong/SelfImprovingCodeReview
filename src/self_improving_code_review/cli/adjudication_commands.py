@@ -31,7 +31,9 @@ def execute_adjudication_command(arguments: Namespace) -> int:
     """盲化出力または人工裁定を一回実行する."""
     repository = Path(arguments.repository).resolve()
     config = load_config(Path(arguments.config) if arguments.config else None)
-    database_path = _within_repository(repository, config.database.path, "データベースのパス")
+    database_path = _within_repository(
+        repository, config.database.path, Messages.DATABASE_PATH_LABEL
+    )
     SqliteUnitOfWorkFactory(database_path)
     _validate_project_context(repository, config, database_path)
     project_id = ProjectId(config.project_id) if config.governance.enabled else None
@@ -39,7 +41,9 @@ def execute_adjudication_command(arguments: Namespace) -> int:
     if arguments.adjudication_command == "export":
         pending = store.list_pending_adjudications(arguments.split, arguments.set_version)
         output = (
-            _within_repository(repository, Path(arguments.output), "裁定出力ファイル")
+            _within_repository(
+                repository, Path(arguments.output), Messages.ADJUDICATION_OUTPUT_LABEL
+            )
             if arguments.output
             else None
         )

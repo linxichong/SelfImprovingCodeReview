@@ -70,7 +70,9 @@ def execute_evaluation_command(arguments: Namespace) -> int:
     repository = Path(arguments.repository).resolve()
     config_path = Path(arguments.config) if arguments.config else None
     config = load_config(config_path)
-    database_path = _within_repository(repository, config.database.path, "データベースのパス")
+    database_path = _within_repository(
+        repository, config.database.path, Messages.DATABASE_PATH_LABEL
+    )
     SqliteUnitOfWorkFactory(database_path)
     _validate_project_context(repository, config, database_path)
     project_id = ProjectId(config.project_id) if config.governance.enabled else None

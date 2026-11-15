@@ -221,6 +221,6 @@ __marimo__/
 
 reports/
 
-# ローカル実行設定
+# 本地运行配置
 /config/gateway.local.yaml
 /config/evaluation.local.yaml

@@ -145,7 +145,7 @@ def test_rules_check_dispatch_and_help(
     assert captured.value.code == 0
     help_text = " ".join(capsys.readouterr().out.split())
     assert "--file PATH" in help_text
-    assert "LLM を呼ばず" in help_text
+    assert "跳过 LLM 调用" in help_text
 
 
 def test_scm_sync_feedback_arguments_are_documented_and_parsed(
@@ -267,9 +267,9 @@ def test_review_help_explains_all_parameters(
         "--diff-file PATCH",
     ):
         assert option in help_text
-    assert "未ステージ差分" in help_text
-    assert "三点比較差分" in help_text
-    assert "M2 用の予約値" in help_text
-    assert "最大サイズは 20 MiB" in help_text
-    assert "一つだけ指定" in help_text
-    assert "このヘルプを表示して終了" in help_text
+    assert "未暂存差异" in help_text
+    assert "三点比较差异" in help_text
+    assert "memory 使用规则和已批准的记忆" in help_text
+    assert "文件最大为 20 MiB" in help_text
+    assert "选择一项" in help_text
+    assert "显示此帮助并退出" in help_text

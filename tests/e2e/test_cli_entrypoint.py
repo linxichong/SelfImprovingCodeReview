@@ -25,10 +25,54 @@ def test_module_entrypoint_exposes_review_command() -> None:
     )
 
     assert completed.returncode == 0
+    assert "解析 Git 差异" in completed.stdout
+    assert "命令:" in completed.stdout
+    assert "选项:" in completed.stdout
     assert (
         "{review,rules,feedback,memory,ground-truth,eval,adjudication,scm,governance}"
         in completed.stdout
     )
+
+
+@pytest.mark.parametrize(
+    ("command", "expected"),
+    [("review", "差异来源"), ("memory", "记忆候选"), ("eval", "比较组")],
+)
+def test_subcommand_help_uses_simplified_chinese(command: str, expected: str) -> None:
+    """下位コマンドのヘルプに簡体字中国語の説明を表示する。"""
+    completed = subprocess.run(
+        [sys.executable, "-m", "self_improving_code_review.cli.main", command, "--help"],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert completed.returncode == 0
+    assert expected in completed.stdout
+    assert "オプション" not in completed.stdout
+
+
+def test_cli_error_writes_readable_chinese_json(tmp_path: Path) -> None:
+    """標準エラーに読み取れる中国語と安定したエラーコードを出力する。"""
+    missing_config = tmp_path / "missing.yaml"
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "self_improving_code_review.cli.main",
+            "review",
+            "--repository",
+            str(tmp_path),
+            "--config",
+            str(missing_config),
+            "--git-diff",
+        ],
+        check=False,
+        capture_output=True,
+        encoding="utf-8",
+    )
+    assert completed.returncode == 1
+    assert "无法读取配置文件" in completed.stderr
+    assert json.loads(completed.stderr)["error"]["code"] == "InvalidInputError"
 
 
 @pytest.mark.parametrize("action", ["import", "serve", "migrate", "check"])

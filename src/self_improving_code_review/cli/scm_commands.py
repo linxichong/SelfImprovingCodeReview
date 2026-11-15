@@ -235,6 +235,6 @@ def _within_repository(repository: Path, configured_path: Path) -> Path:
         resolved.relative_to(repository)
     except ValueError as exc:
         raise InvalidInputError(
-            Messages.configured_path_outside_repository("データベースのパス")
+            Messages.configured_path_outside_repository(Messages.DATABASE_PATH_LABEL)
         ) from exc
     return resolved

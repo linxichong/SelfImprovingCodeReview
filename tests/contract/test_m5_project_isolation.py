@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 import sqlite3
 from contextlib import closing
 from datetime import UTC, datetime
@@ -29,6 +30,7 @@ from self_improving_code_review.domain.evaluation.models import (
 )
 from self_improving_code_review.infrastructure.persistence.evaluation_store import EvaluationStore
 from self_improving_code_review.infrastructure.persistence.sqlite import initialize_database
+from self_improving_code_review.messages import Messages
 
 _NOW = datetime(2026, 9, 29, tzinfo=UTC)
 _PROJECT_A = ProjectId("project-a")
@@ -85,7 +87,9 @@ def test_ground_truth_is_created_and_queried_within_project_boundary(
             operation()
     with pytest.raises(InvalidInputError, match="NOT_FOUND"):
         store_b.publish(ground_truth)
-    with pytest.raises(InvalidInputError, match="発行済み"):
+    with pytest.raises(
+        InvalidInputError, match=re.escape(Messages.GROUND_TRUTH_SET_ALREADY_EXISTS)
+    ):
         store_a.publish(ground_truth)
 
 
