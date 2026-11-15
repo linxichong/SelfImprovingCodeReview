@@ -657,3 +657,16 @@ class Messages:
     def litellm_gateway_request_failed(error_type: str) -> str:
         """LiteLLM の再試行不可要求エラーメッセージを返す."""
         return f"LiteLLM 网关请求失败: {error_type}"
+
+    WEB_HELP = "启动本机只读审查管理台。"
+    WEB_DB_HELP = "已有的 SQLite 数据库。默认 .review/review.db。"
+    WEB_REPORTS_HELP = "保存 JSON 报告的目录。默认 .review/reports。"
+    WEB_PORT_HELP = "本机监听端口。默认 8765。"
+    WEB_INVALID_PORT = "端口必须在 1 到 65535 之间。"
+    WEB_DATABASE_MISSING = "找不到审查数据库，请用 --db 指定已有文件。"
+    WEB_DATABASE_INVALID = "无法读取审查数据库，或数据库缺少审查表。"
+    WEB_LOGIN_PROMPT = "设置本次会话的管理员密码 (输入不可见): "
+    WEB_LOGIN_REQUIRED = "请在终端输入密码，或设置 REVIEW_WEB_ADMIN_PASSWORD。"
+    WEB_INVALID_CREDENTIALS = "管理员账户或密码为空或超出长度限制。"
+    WEB_LISTENING = "审查管理台已启动"
+    WEB_LISTEN_ERROR = "无法启动本机管理台，请检查端口和本地权限。"

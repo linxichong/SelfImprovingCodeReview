@@ -29,7 +29,7 @@ def test_module_entrypoint_exposes_review_command() -> None:
     assert "命令:" in completed.stdout
     assert "选项:" in completed.stdout
     assert (
-        "{review,rules,feedback,memory,ground-truth,eval,adjudication,scm,governance}"
+        "{review,rules,feedback,memory,ground-truth,eval,adjudication,scm,governance,dashboard}"
         in completed.stdout
     )
 

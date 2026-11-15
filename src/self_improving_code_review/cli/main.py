@@ -16,6 +16,7 @@ from self_improving_code_review.cli.output import write_error
 from self_improving_code_review.cli.review_commands import execute_review_command
 from self_improving_code_review.cli.rule_commands import execute_rules_check_command
 from self_improving_code_review.cli.scm_commands import execute_scm_command
+from self_improving_code_review.cli.web_commands import add_web_options, execute_web_command
 from self_improving_code_review.domain.common.enums import (
     ConflictResolution,
     ConflictStatus,
@@ -189,6 +190,8 @@ def build_parser() -> argparse.ArgumentParser:
     _add_adjudication_commands(commands)
     _add_scm_commands(commands)
     _add_governance_commands(commands)
+    dashboard = commands.add_parser("dashboard", help=Messages.WEB_HELP, add_help=False)
+    add_web_options(dashboard)
     return parser
 
 
@@ -870,6 +873,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             return execute_evaluation_command(arguments)
         if arguments.command == "scm":
             return execute_scm_command(arguments)
+        if arguments.command == "dashboard":
+            return execute_web_command(arguments)
         if arguments.command == "governance":
             return execute_governance_command(arguments)
         return execute_rules_check_command(arguments)
