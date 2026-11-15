@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "upstream_commit": "c6486859e14b686b3c2aa0176ac8376cc9b72e07",
+  "dataset_sha256": "02c8561f1c3994a26f427d479b2a3f6e6c8e6858161fbc903b45248fa2cb2097",
+  "instances": [
+    "comfyanonymous__ComfyUI@0bb6023",
+    "browser-use__browser-use@aab7b3b",
+    "infiniflow__ragflow@a63caa1"
+  ],
+  "repeats": 3,
+  "model": "gpt-5.6-luna",
+  "judge_model": "gpt-5.6-luna",
+  "gateway": "https://aigw.ldjp-ai.link/v1",
+  "ocr_sha256": "8a0cbf6dfaa1d8681ad3d854971623e34b3f51c4585d2c4ae352f1ff5eee5cb8",
+  "codex_version": "0.169.0-alpha.11.1"
+}

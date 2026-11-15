@@ -7,6 +7,10 @@ from collections.abc import Sequence
 from typing import Never
 
 from self_improving_code_review.cli.adjudication_commands import execute_adjudication_command
+from self_improving_code_review.cli.benchmark_commands import (
+    add_benchmark_options,
+    execute_benchmark,
+)
 from self_improving_code_review.cli.evaluation_commands import execute_evaluation_command
 from self_improving_code_review.cli.feedback_commands import execute_feedback_command
 from self_improving_code_review.cli.governance_commands import execute_governance_command
@@ -192,6 +196,8 @@ def build_parser() -> argparse.ArgumentParser:
     _add_governance_commands(commands)
     dashboard = commands.add_parser("dashboard", help=Messages.WEB_HELP, add_help=False)
     add_web_options(dashboard)
+    benchmark = commands.add_parser("benchmark", help=Messages.BENCH_HELP, add_help=False)
+    add_benchmark_options(benchmark)
     return parser
 
 
@@ -873,6 +879,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             return execute_evaluation_command(arguments)
         if arguments.command == "scm":
             return execute_scm_command(arguments)
+        if arguments.command == "benchmark":
+            return execute_benchmark(arguments)
         if arguments.command == "dashboard":
             return execute_web_command(arguments)
         if arguments.command == "governance":
